@@ -2,7 +2,6 @@ import Database from '~/database/Database'
 import MongodbDatabase from '~/database/MongoDbConnection'
 import User from '~/models/shemas/Users.shemas'
 
-const database = Database.getInstance()
 const mongodbDatabase = MongodbDatabase.getInstance()
 
 class usersServices {
@@ -24,7 +23,7 @@ class usersServices {
   async registerService(payload: { email: string; password: string }) {
     const { email, password } = payload
     try {
-      const result = await database.getUsers(mongodbDatabase).insertOne(
+      const result = await mongodbDatabase.getUsers().insertOne(
         new User({
           email,
           password
