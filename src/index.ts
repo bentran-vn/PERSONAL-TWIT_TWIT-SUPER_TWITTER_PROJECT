@@ -2,10 +2,10 @@
 import express from 'express'
 import Database from './database/database'
 import MongodbDatabase from './database/mongoDbConnection'
+import 'dotenv/config'
 
 //Imports Routes
 import usersRouter from './routes/users.routes'
-
 
 //Config Server
 const app = express()
