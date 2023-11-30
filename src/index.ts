@@ -1,16 +1,19 @@
 //Imports Libraries
 import express from 'express'
-import { run } from './database/database'
+import Database from './database/database'
+import MongodbDatabase from './database/mongoDbConnection'
 
 //Imports Routes
 import usersRouter from './routes/users.routes'
+
 
 //Config Server
 const app = express()
 const PORT = 3000
 
 //Config Database
-run().catch(console.dir)
+const database = Database.getInstance()
+database.connect(new MongodbDatabase())
 
 //Config Swagger
 

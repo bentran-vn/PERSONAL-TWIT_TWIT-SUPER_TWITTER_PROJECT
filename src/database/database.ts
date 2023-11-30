@@ -1,13 +1,26 @@
-import { MongoClient } from 'mongodb'
-const uri = 'mongodb+srv://sa:12345@cluster1.zznsyxx.mongodb.net/?retryWrites=true&w=majority'
+import IConnection from './IConnection'
 
-const client = new MongoClient(uri)
+class Database {
+  private static instance: Database
 
-export async function run() {
-  try {
-    await client.db('admin').command({ ping: 1 })
-    console.log('Pinged your deployment. You successfully connected to MongoDB!')
-  } catch (error) {
-    console.log(error)
+  private constructor() {}
+
+  public static getInstance(): Database {
+    if (!Database.instance) {
+      Database.instance = new Database()
+    }
+
+    return Database.instance
+  }
+
+  public async connect(IConnection: any) {
+    try {
+      IConnection.connect()
+    } catch (error) {
+      console.log(error)
+      throw new Error(`Unable to connect to ${IConnection.connectName}.`)
+    }
   }
 }
+
+export default Database
