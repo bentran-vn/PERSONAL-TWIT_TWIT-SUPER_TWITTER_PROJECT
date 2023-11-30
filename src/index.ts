@@ -1,15 +1,16 @@
 //Imports Libraries
 import express from 'express'
-import Database from './database/database'
-import MongodbDatabase from './database/mongoDbConnection'
 import 'dotenv/config'
+import Database from './database/Database'
+import MongodbDatabase from './database/MongoDbConnection'
+
 
 //Imports Routes
 import usersRouter from './routes/users.routes'
 
 //Config Server
 const app = express()
-const PORT = 3000
+const PORT = 3000 || process.env.PORT
 
 //Config Database
 const database = Database.getInstance()
