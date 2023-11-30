@@ -1,9 +1,10 @@
 import { Router } from 'express'
-import { loginController } from '~/controllers/users.controller'
-import { loginValidator } from '~/middlewares/users.middlewares'
+import { loginController, registerController } from '~/controllers/users.controller'
+import { loginValidator, registerValidator } from '~/middlewares/users.middlewares'
 
 const usersRoute = Router()
 
-usersRoute.get('/login', loginValidator, loginController)
+usersRoute.post('/login', loginValidator, loginController)
+usersRoute.post('/register', registerValidator, registerController)
 
 export default usersRoute

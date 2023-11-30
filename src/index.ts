@@ -4,7 +4,6 @@ import 'dotenv/config'
 import Database from './database/Database'
 import MongodbDatabase from './database/MongoDbConnection'
 
-
 //Imports Routes
 import usersRouter from './routes/users.routes'
 
@@ -14,7 +13,7 @@ const PORT = 3000 || process.env.PORT
 
 //Config Database
 const database = Database.getInstance()
-database.connect(new MongodbDatabase())
+database.connect(MongodbDatabase.getInstance())
 
 //Config Swagger
 

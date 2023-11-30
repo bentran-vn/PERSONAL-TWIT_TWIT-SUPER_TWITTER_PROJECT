@@ -7,3 +7,7 @@ export const loginValidator = (req: Request, res: Response, next: NextFunction) 
   }
   next()
 }
+
+export const registerValidator = (req: Request, res: Response, next: NextFunction) => {
+  next()
+}

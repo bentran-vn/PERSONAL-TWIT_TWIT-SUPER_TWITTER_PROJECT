@@ -21,6 +21,10 @@ class Database {
       throw new Error(`Unable to connect to ${IConnection.connectName}.`)
     }
   }
+
+  public getUsers(IConnection: any) {
+    return IConnection.getUsers()
+  }
 }
 
 export default Database
