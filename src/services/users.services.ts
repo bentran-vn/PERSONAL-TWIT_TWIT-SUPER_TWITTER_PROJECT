@@ -20,7 +20,18 @@ class usersServices {
   //     return 'Hello World'
   //   }
 
-  async registerService(payload: { email: string; password: string }) {
+  async checkEmailService(email: string) {
+    const result = await mongodbDatabase.getUsers().findOne({ email })
+    return Boolean(result)
+  }
+
+  async registerService(payload: {
+    name: string
+    email: string
+    password: string
+    confirmPassword: string
+    date_of_birth: string
+  }) {
     const { email, password } = payload
     try {
       const result = await mongodbDatabase.getUsers().insertOne(
