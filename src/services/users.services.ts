@@ -1,6 +1,8 @@
 import Database from '~/database/Database'
 import MongodbDatabase from '~/database/MongoDbConnection'
+import { RegisterReqBody } from '~/models/request/Users.request'
 import User from '~/models/shemas/Users.shemas'
+import { hashPassword } from '~/utils/cryto'
 
 const mongodbDatabase = MongodbDatabase.getInstance()
 
@@ -25,19 +27,13 @@ class usersServices {
     return Boolean(result)
   }
 
-  async registerService(payload: {
-    name: string
-    email: string
-    password: string
-    confirmPassword: string
-    date_of_birth: string
-  }) {
-    const { email, password } = payload
+  async registerService(payload: RegisterReqBody) {
     try {
       const result = await mongodbDatabase.getUsers().insertOne(
         new User({
-          email,
-          password
+          ...payload,
+          date_of_birth: new Date(payload.date_of_birth),
+          password: hashPassword(payload.password)
         })
       )
       return { message: 'User created successfully', result }
