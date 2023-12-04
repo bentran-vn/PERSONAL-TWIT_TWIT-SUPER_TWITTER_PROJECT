@@ -11,11 +11,6 @@ export const loginController = (req: Request, res: Response) => {
 }
 
 export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {
-  try {
-    const result = await usersServiceInstance.registerService(req.body)
-    return res.status(201).json({ message: 'User created successfully', result })
-  } catch (error) {
-    console.log(error)
-    return res.status(400).json({ message: 'User created fail', error: 'Internal server error' })
-  }
+  const result = await usersServiceInstance.registerService(req.body)
+  return res.status(201).json({ message: 'User created successfully', result })
 }

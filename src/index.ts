@@ -1,5 +1,5 @@
 //Imports Libraries
-import express from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import 'dotenv/config'
 import Database from './database/Database'
 import MongodbDatabase from './database/MongoDbConnection'
@@ -24,6 +24,12 @@ app.use(express.json())
 
 //Implement Routes
 app.use('/users', usersRouter)
+
+//Implement Error Handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.log(err)
+  res.status(500).json({ error: err.message })
+})
 
 //Server Running
 app.listen(PORT, () => {
