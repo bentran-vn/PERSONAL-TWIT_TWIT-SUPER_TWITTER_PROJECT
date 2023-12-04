@@ -6,6 +6,7 @@ import MongodbDatabase from './database/MongoDbConnection'
 
 //Imports Routes
 import usersRouter from './routes/users.routes'
+import { defaultErrorHandler } from './middlewares/error.middlewares'
 
 //Config Server
 const app = express()
@@ -26,10 +27,7 @@ app.use(express.json())
 app.use('/users', usersRouter)
 
 //Implement Error Handler
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.log(err)
-  res.status(500).json({ error: err.message })
-})
+app.use(defaultErrorHandler)
 
 //Server Running
 app.listen(PORT, () => {
