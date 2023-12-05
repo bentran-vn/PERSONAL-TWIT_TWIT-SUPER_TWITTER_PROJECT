@@ -11,7 +11,7 @@ const mongodbDatabase = MongodbDatabase.getInstance()
 class usersServices {
   private static instance: usersServices
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): usersServices {
     if (!usersServices.instance) {
@@ -34,6 +34,10 @@ class usersServices {
       options: { expiresIn: process.env.REFRESH_TOKEN_EXPIRE_MINUTES }
     })
   }
+
+  async signAccessAndRefreshToken(userId: string) {
+    return Promise.all([this.signAccessToken(userId), this.signRefreshToken(userId)])
+  }
   //   async loginService(email: string, password: string) {
   //     return 'Hello World'
   //   }
@@ -53,15 +57,17 @@ class usersServices {
         })
       )
       const userId = result.insertedId.toString()
-      const [accessToken, refreshToken] = await Promise.all([
-        this.signAccessToken(userId),
-        this.signRefreshToken(userId)
-      ])
-      return { message: 'User created successfully', userId, accessToken, refreshToken }
+      const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(userId)
+      return { accessToken, refreshToken }
     } catch (error) {
       console.log(error)
       return { message: 'User created fail', error: 'Internal server error' }
     }
+  }
+
+  async loginService(userId: string) {
+    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(userId)
+    return { accessToken, refreshToken }
   }
 }
 

@@ -5,7 +5,7 @@ import { wrapAsync } from '~/utils/handlers'
 
 const usersRoute = Router()
 
-usersRoute.post('/login', loginValidator, loginController)
+usersRoute.get('/login', loginValidator, wrapAsync(loginController))
 
 /*
 Description: Register a new user

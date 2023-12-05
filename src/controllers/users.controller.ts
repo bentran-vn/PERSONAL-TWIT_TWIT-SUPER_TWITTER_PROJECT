@@ -5,9 +5,16 @@ import { RegisterReqBody } from '~/models/request/Users.request'
 
 const usersServiceInstance = usersServices.getInstance()
 
-export const loginController = (req: Request, res: Response) => {
-  const { email, password } = req.body
-  res.json('Hello World')
+export const loginController = async (req: Request, res: Response) => {
+  const { user }: any = req
+  const user_id = user._id.toString()
+  const [accessToken, refreshToken] = await usersServiceInstance.signAccessAndRefreshToken(user_id)
+  res.json({
+    message: 'Login successfully',
+    userId: user_id,
+    accessToken: accessToken,
+    refreshToken: refreshToken
+  })
 }
 
 export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {

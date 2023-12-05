@@ -1,18 +1,63 @@
 import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
 import { USERS_MESSAGES } from '~/constants/messages'
+import MongodbDatabase from '~/database/MongoDbConnection'
 import usersServices from '~/services/users.services'
+import { hashPassword } from '~/utils/cryto'
 import { validate } from '~/utils/validation'
 
 const usersServiceInstance = usersServices.getInstance()
+const MongoDbInstance = MongodbDatabase.getInstance()
 
-export const loginValidator = (req: Request, res: Response, next: NextFunction) => {
-  const { email, password } = req.body
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Invalid fields' })
-  }
-  next()
-}
+export const loginValidator = validate(
+  checkSchema({
+    email: {
+      notEmpty: {
+        errorMessage: USERS_MESSAGES.EMAIL_IS_REQUIRED
+      },
+      isEmail: {
+        errorMessage: USERS_MESSAGES.EMAIL_IS_INVALID
+      },
+      custom: {
+        options: async (value, { req }) => {
+          const user = await MongoDbInstance.getUsers().findOne({ 
+            email: value,
+            password: hashPassword(req.body.password)
+          })
+          if (user == null) {
+            throw new Error(USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT)
+          }
+          req.user = user
+          return true
+        }
+      }
+    },
+    password: {
+      notEmpty: {
+        errorMessage: USERS_MESSAGES.PASSWORD_IS_REQUIRED
+      },
+      isString: {
+        errorMessage: USERS_MESSAGES.PASSWORD_MUST_BE_A_STRING
+      },
+      trim: true,
+      isLength: {
+        errorMessage: USERS_MESSAGES.PASSWORD_LENGTH_MUST_BE_FROM_8_TO_50,
+        options: { min: 8, max: 50 }
+      },
+      isStrongPassword: {
+        errorMessage: USERS_MESSAGES.PASSWORD_MUST_BE_STRONG,
+        options: {
+          minLength: 8,
+          minLowercase: 1,
+          minUppercase: 1,
+          minNumbers: 1,
+          minSymbols: 1
+        }
+      }
+    }
+  })
+)
+
 
 export const registerValidator = validate(
   checkSchema({

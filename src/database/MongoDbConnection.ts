@@ -6,7 +6,7 @@ class MongodbDatabase implements IConnection {
   public connectName: string
   private client: MongoClient
   private connectString: string
-  private db: Db
+  public db: Db
 
   private static instance: MongodbDatabase
 
