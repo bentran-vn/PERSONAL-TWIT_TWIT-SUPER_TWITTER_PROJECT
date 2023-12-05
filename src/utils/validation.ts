@@ -1,7 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express'
 import { validationResult, ValidationChain } from 'express-validator'
 import { RunnableValidationChains } from 'express-validator/src/middlewares/schema'
-import { ErrorWithStatus } from '~/models/Error'
+import { EntityError, ErrorWithStatus } from '~/models/Error'
 
 export const validate = (validation: RunnableValidationChains<ValidationChain>) => {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -11,6 +11,7 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>) 
       return next()
     }
     const errorObject = errors.mapped()
+    const entityError = new EntityError({ errors: {} })
     for (const key in errorObject) {
       //Lấy message của từng cái lỗi
       const { msg } = errorObject[key]
@@ -18,8 +19,9 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>) 
       if (msg instanceof ErrorWithStatus && msg.status !== 422) {
         return next(msg)
       }
+      entityError.errors[key] = msg
     }
     //Ở đây xử lý lỗi luôn chứ không ném về Error Default Handler (The biggest)
-    res.status(422).json({ errors: errorObject })
+    next(entityError)
   }
 }

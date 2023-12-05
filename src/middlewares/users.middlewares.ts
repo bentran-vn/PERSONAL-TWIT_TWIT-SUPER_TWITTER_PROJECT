@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
+import { USERS_MESSAGES } from '~/constants/messages'
 import usersServices from '~/services/users.services'
 import { validate } from '~/utils/validation'
 
@@ -16,69 +17,100 @@ export const loginValidator = (req: Request, res: Response, next: NextFunction) 
 export const registerValidator = validate(
   checkSchema({
     name: {
-      notEmpty: true,
-      isString: true,
+      notEmpty: {
+        errorMessage: USERS_MESSAGES.NAME_IS_REQUIRED
+      },
+      isString: {
+        errorMessage: USERS_MESSAGES.NAME_MUST_BE_A_STRING
+      },
       trim: true,
       isLength: {
-        errorMessage: 'Name should be at least 3 chars long',
-        options: { min: 3 }
-      },
-      errorMessage: 'Name is required'
+        errorMessage: USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_1_TO_100,
+        options: {
+          min: 1,
+          max: 100
+        }
+      }
     },
     email: {
-      notEmpty: true,
-      isEmail: true,
-      errorMessage: 'Invalid email',
+      notEmpty: {
+        errorMessage: USERS_MESSAGES.EMAIL_IS_REQUIRED
+      },
+      isEmail: {
+        errorMessage: USERS_MESSAGES.EMAIL_IS_INVALID
+      },
       custom: {
         options: async (value, { req }) => {
           const result = await usersServiceInstance.checkEmailService(value)
           if (result) {
-            throw new Error('Email already exists')
+            throw new Error(USERS_MESSAGES.EMAIL_ALREADY_EXISTS)
           }
           return true
         }
       }
     },
     password: {
-      notEmpty: true,
-      isString: true,
+      notEmpty: {
+        errorMessage: USERS_MESSAGES.PASSWORD_IS_REQUIRED
+      },
+      isString: {
+        errorMessage: USERS_MESSAGES.PASSWORD_MUST_BE_A_STRING
+      },
       trim: true,
       isLength: {
-        errorMessage: 'Password should be must in range 8 to 50 chars long',
+        errorMessage: USERS_MESSAGES.PASSWORD_LENGTH_MUST_BE_FROM_8_TO_50,
         options: { min: 8, max: 50 }
       },
-      errorMessage: 'Password is required'
+      isStrongPassword: {
+        errorMessage: USERS_MESSAGES.PASSWORD_MUST_BE_STRONG,
+        options: {
+          minLength: 8,
+          minLowercase: 1,
+          minUppercase: 1,
+          minNumbers: 1,
+          minSymbols: 1
+        }
+      }
     },
     confirmPassword: {
-      notEmpty: true,
-      isString: true,
+      notEmpty: {
+        errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED
+      },
+      isString: {
+        errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_A_STRING
+      },
       trim: true,
       isLength: {
-        errorMessage: 'Password should be must in range 8 to 50 chars long',
+        errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_LENGTH_MUST_BE_FROM_8_TO_50,
         options: { min: 8, max: 50 }
       },
-      errorMessage: 'Confirm password is required',
+      isStrongPassword: {
+        errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_STRONG,
+        options: {
+          minLength: 8,
+          minLowercase: 1,
+          minUppercase: 1,
+          minNumbers: 1,
+          minSymbols: 1
+        }
+      },
       custom: {
         options: (value, { req }) => {
           if (value !== req.body.password) {
-            throw new Error('Password confirmation does not match password')
+            throw new Error(USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD)
           }
           return true
         }
       }
     },
     date_of_birth: {
-      notEmpty: true,
-      isString: true,
-      trim: true,
       isISO8601: {
-        errorMessage: 'Date of birth must be a date',
+        errorMessage: USERS_MESSAGES.DATE_OF_BIRTH_BE_ISO8601,
         options: {
           strict: true,
           strictSeparator: true
         }
-      },
-      errorMessage: 'Date of birth is required'
+      }
     }
   })
 )
