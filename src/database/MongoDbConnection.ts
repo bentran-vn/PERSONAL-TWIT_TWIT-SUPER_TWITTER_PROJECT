@@ -1,6 +1,7 @@
 import { MongoClient, Db, Collection } from 'mongodb'
 import IConnection from './IConnection'
 import User from '~/models/shemas/Users.shemas'
+import RefreshToken from '~/models/shemas/RefreshToken'
 
 class MongodbDatabase implements IConnection {
   public connectName: string
@@ -37,6 +38,9 @@ class MongodbDatabase implements IConnection {
 
   public getUsers(): Collection<User> {
     return this.db.collection(process.env.DB_USERS_COLLECTION as string)
+  }
+  public getRefreshToken(): Collection<RefreshToken> {
+    return this.db.collection(process.env.DB_REFRESH_TOKENS_COLLECTION as string)
   }
 }
 

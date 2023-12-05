@@ -2,15 +2,18 @@ import { Request, Response } from 'express'
 import usersServices from '~/services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { RegisterReqBody } from '~/models/request/Users.request'
+import User from '~/models/shemas/Users.shemas'
+import { ObjectId } from 'mongodb'
+import { USERS_MESSAGES } from '~/constants/messages'
 
 const usersServiceInstance = usersServices.getInstance()
 
 export const loginController = async (req: Request, res: Response) => {
-  const { user }: any = req
-  const user_id = user._id.toString()
-  const [accessToken, refreshToken] = await usersServiceInstance.signAccessAndRefreshToken(user_id)
-  res.json({
-    message: 'Login successfully',
+  const user: User = req.user as User
+  const user_id = user._id as ObjectId
+  const [accessToken, refreshToken] = await usersServiceInstance.signAccessAndRefreshToken(user_id.toString())
+  return res.json({
+    message: USERS_MESSAGES.LOGIN_SUCCESS,
     userId: user_id,
     accessToken: accessToken,
     refreshToken: refreshToken
@@ -19,5 +22,14 @@ export const loginController = async (req: Request, res: Response) => {
 
 export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {
   const result = await usersServiceInstance.registerService(req.body)
-  return res.status(201).json({ message: 'User created successfully', result })
+  return res.json({
+    message: USERS_MESSAGES.REGISTER_SUCCESS,
+    result
+  })
+}
+
+export const logoutController = async (req: Request, res: Response) => {
+  return res.json({
+    message: USERS_MESSAGES.LOGOUT_SUCCESS
+  })
 }

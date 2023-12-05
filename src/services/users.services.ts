@@ -1,7 +1,8 @@
+import { ObjectId } from 'mongodb'
 import { TokenType } from '~/constants/enums'
-import Database from '~/database/Database'
 import MongodbDatabase from '~/database/MongoDbConnection'
 import { RegisterReqBody } from '~/models/request/Users.request'
+import RefreshToken from '~/models/shemas/RefreshToken'
 import User from '~/models/shemas/Users.shemas'
 import { hashPassword } from '~/utils/cryto'
 import { signToken } from '~/utils/jwt'
@@ -11,7 +12,7 @@ const mongodbDatabase = MongodbDatabase.getInstance()
 class usersServices {
   private static instance: usersServices
 
-  private constructor() { }
+  private constructor() {}
 
   public static getInstance(): usersServices {
     if (!usersServices.instance) {
@@ -58,6 +59,12 @@ class usersServices {
       )
       const userId = result.insertedId.toString()
       const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(userId)
+      await mongodbDatabase.getRefreshToken().insertOne(
+        new RefreshToken({
+          token: refreshToken,
+          user_id: new ObjectId(userId)
+        })
+      )
       return { accessToken, refreshToken }
     } catch (error) {
       console.log(error)
@@ -67,6 +74,12 @@ class usersServices {
 
   async loginService(userId: string) {
     const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(userId)
+    await mongodbDatabase.getRefreshToken().insertOne(
+      new RefreshToken({
+        token: refreshToken,
+        user_id: new ObjectId(userId)
+      })
+    )
     return { accessToken, refreshToken }
   }
 }
