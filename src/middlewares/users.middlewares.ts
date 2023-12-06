@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import { capitalize } from 'lodash'
+import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGES } from '~/constants/messages'
 import MongodbDatabase from '~/database/MongoDbConnection'
 import { ErrorWithStatus } from '~/models/Error'
@@ -184,20 +185,21 @@ export const accessTokenValidator = validate(
             if (!accessToken) {
               throw new ErrorWithStatus({
                 message: USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
-                status: 401
+                status: HTTP_STATUS.UNAUTHORIZED
               })
             }
             try {
               //nếu có accessToken thì kiểm tra accessToken có hợp lệ không
               const decoded_authorization = await verifyToken({ token: accessToken })
               //lấy ra decoded_authorization(payload), lưu vào req, để dùng dần
-              req.decoded_authorization = decoded_authorization
+              ;(req as Request).decoded_authorization = decoded_authorization
             } catch (error) {
               throw new ErrorWithStatus({
                 message: capitalize((error as JsonWebTokenError).message),
-                status: 401
+                status: HTTP_STATUS.UNAUTHORIZED
               })
             }
+            return true
           }
         }
       }
@@ -206,4 +208,46 @@ export const accessTokenValidator = validate(
   )
 )
 
-export const refreshTokenValidator = validate(checkSchema({}))
+export const refreshTokenValidator = validate(
+  checkSchema(
+    {
+      refresh_token: {
+        trim: true,
+        notEmpty: {
+          errorMessage: USERS_MESSAGES.REFRESH_TOKEN_IS_REQUIRED
+        },
+        custom: {
+          options: async (value: string, { req }) => {
+            //verify refresh token
+            try {
+              const [decoded_refresh_token, refreshToken] = await Promise.all([
+                verifyToken({ token: value }),
+                MongoDbInstance.getRefreshToken().findOne({
+                  token: value
+                })
+              ])
+              //tìm refresh token trong database
+              if (!refreshToken) {
+                throw new ErrorWithStatus({
+                  message: USERS_MESSAGES.USED_REFRESH_TOKEN_OR_NOT_EXISTS,
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
+              ;(req as Request).decoded_refresh_token = decoded_refresh_token
+            } catch (error) {
+              if (error instanceof JsonWebTokenError) {
+                throw new ErrorWithStatus({
+                  message: capitalize((error as JsonWebTokenError).message),
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
+              throw error
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)

@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import { resolve } from 'path'
+import { TokenPayload } from '~/models/request/Users.request'
 
 //làm hàm nhận vào private key và sau đó kí tên và trả về token
 
@@ -31,13 +31,10 @@ export const verifyToken = ({
   token: string
   secretOrPulicKey?: string
 }) => {
-  new Promise<jwt.JwtPayload>((resolve, reject) => {
+  return new Promise<TokenPayload>((resolve, reject) => {
     jwt.verify(token, secretOrPulicKey, (err, decoded) => {
-      if (err) {
-        throw reject(err)
-      } else {
-        resolve(decoded as jwt.JwtPayload)
-      }
+      if (err) throw reject(err)
+      resolve(decoded as TokenPayload)
     })
   })
 }
