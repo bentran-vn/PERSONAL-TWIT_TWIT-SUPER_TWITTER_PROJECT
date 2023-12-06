@@ -14,9 +14,6 @@ This software system offers a comprehensive solution for managing examination sc
   
 - **Student:** Has the ability to manage personal exam attendance schedules for each term.
 
-# 1. Use case diagram
-![Project Relational Schema](https://drive.google.com/uc?id=11OStsOL0eOhctb_wo_avuYgPzj-Q3__2)
-
 # 2. Techstacks
 
 ![Project Relational Schema](https://drive.google.com/uc?id=1TcefZxtdhIYq-qBHkBRXReuckMjZnzwE)
@@ -48,23 +45,11 @@ node server.js
 
 ```sh
 Port: 8080
-MySQL: 8.1
 Npm: 9.5.1
 Node: v18.16.1
 ```
-
 # 5. Relational Schema
 ![Project Relational Schema](https://drive.google.com/uc?id=1neYrND8E90t6hB1EgC9ICQV2IgRseHyf)
-
-# 6. Team Members
-
-| Name                    	| UniID      	| Role      	| Position                      	|
-|-------------------------	|------------	|------------	|-------------------------------	|
-| [**Trần Đình Thiên Tân**](https://github.com/bentran-vn) 	| **SE171757** 	| **Backend** 	| **Team Leader, Backend Leader** 	|
-| [**Lại Nguyễn Minh Quân**](https://github.com/jeffySE29) | **SE170067** 	| **Backend** 	| **Member**                    	|
-| [**Đỗ Dương Đăng Khoa**](https://github.com/khoahocmai)  	| **SE170285** 	| **Backend** 	| **Member**                    	|
-| [**Lê Bảo Khang**](https://github.com/kle1603)        	| **SE171164** 	| **Frontend** | **Frontend Leader**           	|
-| [**Phạm Thị Ngọc Anh**](https://github.com/lachimo)   	| **SE171173** 	| **Frontend** | **Member**                    	|
 
 
 
