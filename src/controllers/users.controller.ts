@@ -11,7 +11,7 @@ const usersServiceInstance = usersServices.getInstance()
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user: User = req.user as User
   const user_id = user._id as ObjectId
-  const [accessToken, refreshToken] = await usersServiceInstance.signAccessAndRefreshToken(user_id.toString())
+  const { accessToken, refreshToken } = await usersServiceInstance.loginService(user_id.toString())
   return res.json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
     userId: user_id,
