@@ -27,14 +27,14 @@ This software system offers a comprehensive solution for managing examination sc
 To clone the repository, use the following command in your terminal:
 
 ```bash
-git clone https://github.com/bentran-vn/MINION-ESMS-BACKEND-EXAM_SCHEDULE_MANAGEMENT_SYSTEM.git
+git clone https://github.com/bentran-vn/PERSONAL-TWIT_TWIT-SUPER_TWITTER_PROJECT
 ```
 ### Install Dependencies
 
 After cloning the repository, navigate into the project directory and install the required dependencies using npm:
 
 ```bash
-cd MINION-ESMS-BACKEND-EXAM_SCHEDULE_MANAGEMENT_SYSTEM
+cd PERSONAL-TWIT_TWIT-SUPER_TWITTER_PROJECT
 npm install --save
 ```
 ### Running the Project
@@ -42,17 +42,15 @@ npm install --save
 Once the dependencies are installed, initiate the project by running the server using Node.js:
 
 ```bash
-node server.js
+npm run dev
 ```
 # 4. Project Information
 
 ```sh
-Port: 8080
+Port:3000
 Npm: 9.5.1
 Node: v18.16.1
 ```
-# 5. Relational Schema
-![Project Relational Schema](https://drive.google.com/uc?id=1neYrND8E90t6hB1EgC9ICQV2IgRseHyf)
 
 
 
