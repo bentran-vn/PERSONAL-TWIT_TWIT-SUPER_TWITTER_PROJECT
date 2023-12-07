@@ -16,7 +16,10 @@ This software system offers a comprehensive solution for managing examination sc
 
 # 2. Techstacks
 
-- Backend: NodeJS, ExpressJS, TypeScript, MongoDB
+- Backend: NodeJS, ExpressJS, TypeScript, MongoDB.
+- Environment Configuration: Eslint, Prettier, Nodemon
+- System Desgin: SOLID, Dependency Injection, MVC models
+- Architecture: Three layers architecture
 
 # 3. Installation
 ### Clone the Repository
