@@ -1,5 +1,5 @@
 <h1> TWIT_TWIT <br> TWITTER COVERS PLATFORMS </h1>
-This is a "<i>Self Training to create a software system with scabability, manageability andsystematic design </i>",
+This is a "<i>Self Training to create a software system with scabability, manageability andsystematic design </i>"
 
 # 0. Introduction
 This software system offers a comprehensive solution for managing examination schedules at FPT University Ho Chi Minh City. The platform caters to four primary actors: Students, Lecturers, Administrators, and Staff. The system encompasses notable features, such as automated exam invigilation schedule registration for lecturers, automatic email notifications, and the ability to automatically close the invigilation registration portal for lecturers.
