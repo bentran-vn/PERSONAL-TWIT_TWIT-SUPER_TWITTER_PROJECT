@@ -16,7 +16,7 @@ This software system offers a comprehensive solution for managing examination sc
 
 # 2. Techstacks
 
-![Project Relational Schema](https://drive.google.com/uc?id=1TcefZxtdhIYq-qBHkBRXReuckMjZnzwE)
+- Backend: NodeJS, ExpressJS, TypeScript, MongoDB
 
 # 3. Installation
 ### Clone the Repository
