@@ -1,7 +1,13 @@
 import { Router } from 'express'
-import { loginController, logoutController, registerController } from '~/controllers/users.controller'
+import {
+  emailVerifyTokenController,
+  loginController,
+  logoutController,
+  registerController
+} from '~/controllers/users.controller'
 import {
   accessTokenValidator,
+  emailVerifyTokenValidator,
   loginValidator,
   refreshTokenValidator,
   registerValidator
@@ -34,4 +40,17 @@ headers: { Authorization: Bearer <access_token> }
 body: { refreshToken: string }
  */
 usersRoute.post('/logout', accessTokenValidator, refreshTokenValidator, wrapAsync(logoutController))
+
+/**
+Description: Refresh access token
+khi người dùng đăng kí họ sẽ nhận được mail có link dạng
+http://localhost:3000/users/verify-email?token=<email_verify_token>
+nếu mà em nhấp vào link thì sẽ tạo ra request có query là token
+sever kiểm tra token có hợp lệ không,
+thì từ decoded.email_verify_token lấy ra user_id
+và vào user_id đó để update lại email_verify_token thành null, verified_email thành 1,update_at
+ */
+usersRoute.post('/verify-email', emailVerifyTokenValidator, wrapAsync(emailVerifyTokenController))
+
+
 export default usersRoute

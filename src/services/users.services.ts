@@ -27,6 +27,7 @@ class usersServices {
   private signAccessToken(userId: string) {
     return signToken({
       payload: { user_id: userId, token_type: TokenType.Access },
+      privateKey: process.env.JWT_SECRET_ACCESS_TOKEN as string,
       options: { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_MINUTES }
     })
   }
@@ -34,7 +35,16 @@ class usersServices {
   private signRefreshToken(userId: string) {
     return signToken({
       payload: { user_id: userId, token_type: TokenType.Refresh },
-      options: { expiresIn: process.env.REFRESH_TOKEN_EXPIRE_MINUTES }
+      privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string,
+      options: { expiresIn: process.env.REFRESH_TOKEN_EXPIRE_DAYS }
+    })
+  }
+  //hàm nhận vào userId và bỏ vào payload để tạo Email verify token
+  private signEmailVerifyToken(userId: string) {
+    return signToken({
+      payload: { user_id: userId, token_type: TokenType.EmailVerifyToken },
+      privateKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string,
+      options: { expiresIn: process.env.EMAIL_VERIFY_TOKEN_EXPIRE_DAYS }
     })
   }
 
@@ -52,21 +62,27 @@ class usersServices {
 
   async registerService(payload: RegisterReqBody) {
     try {
-      const result = await mongodbDatabase.getUsers().insertOne(
+      const user_id = new ObjectId()
+      const email_verify_token = await this.signEmailVerifyToken(user_id.toString())
+      await mongodbDatabase.getUsers().insertOne(
         new User({
           ...payload,
+          _id: user_id,
           date_of_birth: new Date(payload.date_of_birth),
-          password: hashPassword(payload.password)
+          password: hashPassword(payload.password),
+          email_verify_token: email_verify_token
         })
       )
-      const userId = result.insertedId.toString()
-      const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(userId)
+      const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(user_id.toString())
       await mongodbDatabase.getRefreshToken().insertOne(
         new RefreshToken({
           token: refreshToken,
-          user_id: new ObjectId(userId)
+          user_id: new ObjectId(user_id.toString())
         })
       )
+
+      //giả lập gửi mail
+      console.log(email_verify_token)
       return { accessToken, refreshToken }
     } catch (error) {
       console.log(error)

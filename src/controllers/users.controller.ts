@@ -5,6 +5,7 @@ import { LoginReqBody, LogoutReqBody, RegisterReqBody } from '~/models/request/U
 import User from '~/models/shemas/Users.shemas'
 import { ObjectId } from 'mongodb'
 import { USERS_MESSAGES } from '~/constants/messages'
+import { json } from 'stream/consumers'
 
 const usersServiceInstance = usersServices.getInstance()
 
@@ -33,4 +34,8 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
   //logout sẽ nhận vào refreshToken và xóa refreshToken đó trong database
   const result = await usersServiceInstance.logoutService(refreshToken)
   return res.json(result)
+}
+
+export const emailVerifyTokenController = async (req: Request, res: Response) => {
+  return res.json('hi')
 }

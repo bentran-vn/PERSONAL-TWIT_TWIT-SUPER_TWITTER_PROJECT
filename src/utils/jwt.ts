@@ -5,11 +5,11 @@ import { TokenPayload } from '~/models/request/Users.request'
 
 export const signToken = ({
   payload,
-  privateKey = process.env.JWT_SECRET as string,
+  privateKey,
   options = { algorithm: 'HS256' }
 }: {
   payload: string | object | Buffer
-  privateKey?: string
+  privateKey: string
   options: jwt.SignOptions
 }) => {
   return new Promise<string>((resolve, reject) => {
@@ -24,13 +24,7 @@ export const signToken = ({
 }
 
 //hàm nhận vào token, và secretOrPulicKey?
-export const verifyToken = ({
-  token,
-  secretOrPulicKey = process.env.JWT_SECRET as string
-}: {
-  token: string
-  secretOrPulicKey?: string
-}) => {
+export const verifyToken = ({ token, secretOrPulicKey }: { token: string; secretOrPulicKey: string }) => {
   return new Promise<TokenPayload>((resolve, reject) => {
     jwt.verify(token, secretOrPulicKey, (err, decoded) => {
       if (err) throw reject(err)
