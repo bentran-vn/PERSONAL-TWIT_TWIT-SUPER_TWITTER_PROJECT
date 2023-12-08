@@ -53,6 +53,14 @@ class usersServices {
     })
   }
 
+  private signEmailForgotPasswordToken(userId: string) {
+    return signToken({
+      payload: { user_id: userId, token_type: TokenType.ForgotPassword },
+      privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string,
+      options: { expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRE_DAYS }
+    })
+  }
+
   async signAccessAndRefreshToken(userId: string) {
     return Promise.all([this.signAccessToken(userId), this.signRefreshToken(userId)])
   }
@@ -152,6 +160,23 @@ class usersServices {
       console.log(error)
       throw new ErrorWithStatus({ message: 'User created fail', status: 500 })
     }
+  }
+
+  async forgotPasswordService(userId: string) {
+    //tạo ra forgot password token
+    const forgot_password_token = await this.signEmailForgotPasswordToken(userId)
+    //update lại user
+    await mongodbDatabase.getUsers().updateOne({ _id: new ObjectId(userId) }, [
+      {
+        $set: {
+          forgot_password_token,
+          updated_at: '$$NOW'
+        }
+      }
+    ])
+    //giả lập gửi mail
+    console.log(forgot_password_token)
+    return { message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD }
   }
 }
 

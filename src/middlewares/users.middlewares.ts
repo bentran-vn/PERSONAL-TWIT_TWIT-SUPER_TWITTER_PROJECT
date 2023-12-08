@@ -314,3 +314,55 @@ export const forgotPasswordValidator = validate(
     ['body']
   )
 )
+
+export const verifyForgotPasswordTokenValidator = validate(
+  checkSchema({
+    forgot_password_token: {
+      trim: true,
+      custom: {
+        options: async (value: string, { req }) => {
+          //kiểm tra người dùng có truyền lên email_verify_token không
+          if (!value) {
+            throw new ErrorWithStatus({
+              message: USERS_MESSAGES.FORGOR_PASSWORD_TOKEN_IS_REQUIRED,
+              status: HTTP_STATUS.BAD_REQUEST
+            })
+          }
+          //verify email verify token
+          try {
+            const decoded_forgot_password_token = await verifyToken({
+              token: value,
+              secretOrPulicKey: process.env.JWT_SECRET_FORGOR_PASSWORD_TOKEN as string
+            })
+            //sau khi verify thành công ta được payload
+            ;(req as Request).decoded_forgot_password_token = decoded_forgot_password_token
+            const { user_id } = decoded_forgot_password_token
+            const user = await usersServiceInstance.getUserById(user_id)
+            //nếu mà không có user thì báo lỗi
+            if (!user) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.USER_NOT_FOUND,
+                status: HTTP_STATUS.NOT_FOUND
+              })
+            }
+            if (user.forgot_password_token !== value) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.FORGOR_PASSWORD_TOKEN_IS_INCORRECT,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+          } catch (error) {
+            if (error instanceof JsonWebTokenError) {
+              throw new ErrorWithStatus({
+                message: capitalize((error as JsonWebTokenError).message),
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            throw error
+          }
+          return true
+        }
+      }
+    }
+  })
+)

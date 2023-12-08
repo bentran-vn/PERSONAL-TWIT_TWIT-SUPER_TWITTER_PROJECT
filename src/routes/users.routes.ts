@@ -5,7 +5,8 @@ import {
   loginController,
   logoutController,
   registerController,
-  resendVerifyEmailController
+  resendVerifyEmailController,
+  verifyForgotPasswordTokenController
 } from '~/controllers/users.controller'
 import {
   accessTokenValidator,
@@ -13,7 +14,8 @@ import {
   forgotPasswordValidator,
   loginValidator,
   refreshTokenValidator,
-  registerValidator
+  registerValidator,
+  verifyForgotPasswordTokenValidator
 } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handlers'
 
@@ -72,5 +74,20 @@ Path: /users/forgot-password
 method: POST
 body: { email: string }
 */
-usersRoute.post('forgot-password', forgotPasswordValidator, wrapAsync(forgotPasswordController))
+usersRoute.post('/forgot-password', forgotPasswordValidator, wrapAsync(forgotPasswordController))
+
+/**
+Description: khi người dùng nhấp vào link forgot-password,
+ thì sẽ tạo ra request kèm theo forgot_password_token lên server
+ server sẽ kiểm tra forgot_password_token có hợp lệ không
+ sau đó chuyển hướng người dùng đến trang đổi mật khẩu
+Path: /users/verify-forgot-password
+method: POST
+body: { forgot_password_token: string }
+ */
+usersRoute.post(
+  '/verify-forgot-password',
+  verifyForgotPasswordTokenValidator,
+  wrapAsync(verifyForgotPasswordTokenController)
+)
 export default usersRoute
