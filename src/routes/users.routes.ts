@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   emailVerifyTokenController,
+  forgotPasswordController,
   loginController,
   logoutController,
   registerController,
@@ -9,6 +10,7 @@ import {
 import {
   accessTokenValidator,
   emailVerifyTokenValidator,
+  forgotPasswordValidator,
   loginValidator,
   refreshTokenValidator,
   registerValidator
@@ -63,4 +65,12 @@ hearders: { Authorization: Bearer <access_token> }
 //đăng nhập mới được resend
  */
 usersRoute.post('/resend-verify-email', accessTokenValidator, wrapAsync(resendVerifyEmailController))
+
+/**
+Description: khi người dùng quên mật khẩu, họ gửi email để xin mình tạo cho họ một forgot_password_token
+Path: /users/forgot-password
+method: POST
+body: { email: string }
+*/
+usersRoute.post('forgot-password', forgotPasswordValidator, wrapAsync(forgotPasswordController))
 export default usersRoute

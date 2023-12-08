@@ -102,3 +102,6 @@ export const resendVerifyEmailController = async (req: Request, res: Response) =
     result
   })
 }
+
+export const forgotPasswordController = async (req: Request, res: Response) => {
+}
