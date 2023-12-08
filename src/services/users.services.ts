@@ -23,6 +23,10 @@ class usersServices {
     return usersServices.instance
   }
 
+  async getUserById(userId: string) {
+    return Promise.resolve(mongodbDatabase.getUsers().findOne({ _id: new ObjectId(userId) }))
+  }
+
   //hàm nhận vào userId và bỏ vào payload để tạo Access token
   private signAccessToken(userId: string) {
     return signToken({
@@ -104,6 +108,28 @@ class usersServices {
   async logoutService(refreshToken: string) {
     await mongodbDatabase.getRefreshToken().deleteOne({ token: refreshToken })
     return { message: USERS_MESSAGES.LOGOUT_SUCCESS }
+  }
+
+  async emailVerifyTokenService(userId: string) {
+    await mongodbDatabase.getUsers().updateOne({ _id: new ObjectId(userId) }, [
+      {
+        $set: {
+          email_verify_token: '',
+          verify: 1,
+          updated_at: '$$NOW'
+        }
+      }
+    ])
+    //tạo ra access token và refresh token
+    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(userId)
+    //lưu refresh token vào database
+    await mongodbDatabase.getRefreshToken().insertOne(
+      new RefreshToken({
+        token: refreshToken,
+        user_id: new ObjectId(userId)
+      })
+    )
+    return { accessToken, refreshToken }
   }
 }
 

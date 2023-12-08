@@ -1,11 +1,13 @@
 import { Request, Response } from 'express'
 import usersServices from '~/services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { LoginReqBody, LogoutReqBody, RegisterReqBody } from '~/models/request/Users.request'
+import { LoginReqBody, LogoutReqBody, RegisterReqBody, TokenPayload } from '~/models/request/Users.request'
 import User from '~/models/shemas/Users.shemas'
 import { ObjectId } from 'mongodb'
 import { USERS_MESSAGES } from '~/constants/messages'
-import { json } from 'stream/consumers'
+import { ErrorWithStatus } from '~/models/Error'
+import HTTP_STATUS from '~/constants/httpStatus'
+import { UserVerifyStatus } from '~/constants/enums'
 
 const usersServiceInstance = usersServices.getInstance()
 
@@ -37,5 +39,23 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
 }
 
 export const emailVerifyTokenController = async (req: Request, res: Response) => {
-  return res.json('hi')
+  const { decoded_email_verify_token } = req.decoded_email_verify_token as TokenPayload
+  const user_id = decoded_email_verify_token.user_id as ObjectId
+  const user = await usersServiceInstance.getUserById(user_id.toString())
+  if (!user) {
+    throw new ErrorWithStatus({
+      message: USERS_MESSAGES.USER_NOT_FOUND,
+      status: HTTP_STATUS.NOT_FOUND
+    })
+  }
+  if (user.email_verify_token === '' || user.verify === UserVerifyStatus.Verified) {
+    return res.json({
+      message: USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE
+    })
+  }
+  const result = await usersServiceInstance.emailVerifyTokenService(user_id.toString())
+  return res.json({
+    message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS,
+    result
+  })
 }

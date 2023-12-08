@@ -52,5 +52,4 @@ và vào user_id đó để update lại email_verify_token thành null, verifie
  */
 usersRoute.post('/verify-email', emailVerifyTokenValidator, wrapAsync(emailVerifyTokenController))
 
-
 export default usersRoute

@@ -262,21 +262,14 @@ export const emailVerifyTokenValidator = validate(
               status: HTTP_STATUS.BAD_REQUEST
             })
           }
+          //verify email verify token
           try {
-            const [decoded_refresh_token, refreshToken] = await Promise.all([
-              verifyToken({ token: value, secretOrPulicKey: process.env.JWT_SECRET_REFRESH_TOKEN as string }),
-              MongoDbInstance.getRefreshToken().findOne({
-                token: value
-              })
-            ])
-            //tìm refresh token trong database
-            if (!refreshToken) {
-              throw new ErrorWithStatus({
-                message: USERS_MESSAGES.USED_REFRESH_TOKEN_OR_NOT_EXISTS,
-                status: HTTP_STATUS.UNAUTHORIZED
-              })
-            }
-            ;(req as Request).decoded_refresh_token = decoded_refresh_token
+            const decoded_email_verify_token = await verifyToken({
+              token: value,
+              secretOrPulicKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string
+            })
+            //sau khi verify thành công ta được payload
+            ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
           } catch (error) {
             if (error instanceof JsonWebTokenError) {
               throw new ErrorWithStatus({
