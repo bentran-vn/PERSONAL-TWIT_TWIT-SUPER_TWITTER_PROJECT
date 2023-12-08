@@ -1,7 +1,13 @@
 import { Request, Response } from 'express'
 import usersServices from '~/services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { LoginReqBody, LogoutReqBody, RegisterReqBody, TokenPayload } from '~/models/request/Users.request'
+import {
+  LoginReqBody,
+  LogoutReqBody,
+  RegisterReqBody,
+  TokenPayload,
+  VerifyEmailReqBody
+} from '~/models/request/Users.request'
 import User from '~/models/shemas/Users.shemas'
 import { ObjectId } from 'mongodb'
 import { USERS_MESSAGES } from '~/constants/messages'
@@ -38,9 +44,40 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
   return res.json(result)
 }
 
-export const emailVerifyTokenController = async (req: Request, res: Response) => {
-  const { decoded_email_verify_token } = req.decoded_email_verify_token as TokenPayload
-  const user_id = decoded_email_verify_token.user_id as ObjectId
+// eslint-disable-next-line prettier/prettier
+export const emailVerifyTokenController = async (req: Request<ParamsDictionary, any, VerifyEmailReqBody>, res: Response) => {
+  const { user_id } = req.decoded_email_verify_token as TokenPayload
+  const user = await usersServiceInstance.getUserById(user_id.toString())
+  if (!user) {
+    throw new ErrorWithStatus({
+      message: USERS_MESSAGES.USER_NOT_FOUND,
+      status: HTTP_STATUS.NOT_FOUND
+    })
+  }
+  //nếu mà k khớp email_verify_token thì báo lỗi
+  if (user.email_verify_token === '' || user.verify === UserVerifyStatus.Verified) {
+    return res.json({
+      message: USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE
+    })
+  }
+  //nếu mà không khớp thì báo lỗi
+  if (user.email_verify_token !== req.body.email_verify_token) {
+    throw new ErrorWithStatus({
+      message: USERS_MESSAGES.EMAIL_VERIFY_TOKEN_IS_INCORRECT,
+      status: HTTP_STATUS.UNAUTHORIZED
+    })
+  }
+  const result = await usersServiceInstance.emailVerifyTokenService(user_id.toString())
+  return res.json({
+    message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS,
+    result
+  })
+}
+
+export const resendVerifyEmailController = async (req: Request, res: Response) => {
+  //nếu vào được đây có nghĩa là access_token hợp lệ
+  //và mình đã lấy được decoded_authorization
+  const { user_id } = req.decoded_authorization as TokenPayload
   const user = await usersServiceInstance.getUserById(user_id.toString())
   if (!user) {
     throw new ErrorWithStatus({
@@ -53,7 +90,13 @@ export const emailVerifyTokenController = async (req: Request, res: Response) =>
       message: USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE
     })
   }
-  const result = await usersServiceInstance.emailVerifyTokenService(user_id.toString())
+  if (user.verify === UserVerifyStatus.Banned) {
+    throw new ErrorWithStatus({
+      message: USERS_MESSAGES.USER_BANNED,
+      status: HTTP_STATUS.FORBIDDEN
+    })
+  }
+  const result = await usersServiceInstance.resendVerifyEmailService(user_id.toString())
   return res.json({
     message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS,
     result

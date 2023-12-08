@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import { TokenType } from '~/constants/enums'
 import { USERS_MESSAGES } from '~/constants/messages'
 import MongodbDatabase from '~/database/MongoDbConnection'
+import { ErrorWithStatus } from '~/models/Error'
 import { RegisterReqBody } from '~/models/request/Users.request'
 import RefreshToken from '~/models/shemas/RefreshToken'
 import User from '~/models/shemas/Users.shemas'
@@ -130,6 +131,27 @@ class usersServices {
       })
     )
     return { accessToken, refreshToken }
+  }
+
+  async resendVerifyEmailService(userId: string) {
+    try {
+      const user_id = new ObjectId()
+      const email_verify_token = await this.signEmailVerifyToken(user_id.toString())
+      await mongodbDatabase.getUsers().updateOne({ _id: new ObjectId(userId) }, [
+        {
+          $set: {
+            email_verify_token,
+            updated_at: '$$NOW'
+          }
+        }
+      ])
+      //giả lập gửi mail
+      console.log(email_verify_token)
+      return { message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS }
+    } catch (error) {
+      console.log(error)
+      throw new ErrorWithStatus({ message: 'User created fail', status: 500 })
+    }
   }
 }
 

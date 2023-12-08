@@ -1,3 +1,4 @@
+import exp from 'constants'
 import { JwtPayload } from 'jsonwebtoken'
 import { TokenType } from '~/constants/enums'
 
@@ -21,4 +22,8 @@ export interface LogoutReqBody {
 export interface TokenPayload extends JwtPayload {
   user_id: string
   token_type: TokenType
+}
+
+export interface VerifyEmailReqBody {
+  email_verify_token: string
 }
