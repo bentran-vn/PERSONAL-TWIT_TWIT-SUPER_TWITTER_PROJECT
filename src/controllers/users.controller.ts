@@ -21,12 +21,10 @@ const usersServiceInstance = usersServices.getInstance()
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user: User = req.user as User
   const user_id = user._id as ObjectId
-  const { accessToken, refreshToken } = await usersServiceInstance.loginService(user_id.toString())
+  const result = await usersServiceInstance.loginService({ user_id: user_id.toString(), verify: user.verify })
   return res.json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
-    userId: user_id,
-    access_token: accessToken,
-    refresh_token: refreshToken
+    result
   })
 }
 
@@ -99,16 +97,17 @@ export const resendVerifyEmailController = async (req: Request, res: Response) =
   }
   const result = await usersServiceInstance.resendVerifyEmailService(user_id.toString())
   return res.json({
-    message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS,
     result
   })
 }
 
 export const forgotPasswordController = async (req: Request, res: Response) => {
-  const { _id } = req.user as User
-  const result = await usersServiceInstance.forgotPasswordService((_id as ObjectId).toString())
+  const { _id, verify } = req.user as User
+  const result = await usersServiceInstance.forgotPasswordService({
+    user_id: (_id as ObjectId).toString(),
+    verify
+  })
   return res.json({
-    message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS,
     result
   })
 }

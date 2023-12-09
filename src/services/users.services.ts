@@ -1,6 +1,8 @@
 import { log } from 'console'
+import { verify } from 'crypto'
+import { get } from 'lodash'
 import { ObjectId } from 'mongodb'
-import { TokenType } from '~/constants/enums'
+import { TokenType, UserVerifyStatus } from '~/constants/enums'
 import { USERS_MESSAGES } from '~/constants/messages'
 import MongodbDatabase from '~/database/MongoDbConnection'
 import { ErrorWithStatus } from '~/models/Error'
@@ -45,40 +47,40 @@ class usersServices {
   }
 
   //hàm nhận vào userId và bỏ vào payload để tạo Access token
-  private signAccessToken(userId: string) {
+  private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return signToken({
-      payload: { user_id: userId, token_type: TokenType.Access },
+      payload: { user_id, token_type: TokenType.Access, verify },
       privateKey: process.env.JWT_SECRET_ACCESS_TOKEN as string,
       options: { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_MINUTES }
     })
   }
   //hàm nhận vào userId và bỏ vào payload để tạo Refresh token
-  private signRefreshToken(userId: string) {
+  private signRefreshToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return signToken({
-      payload: { user_id: userId, token_type: TokenType.Refresh },
+      payload: { user_id, token_type: TokenType.Refresh, verify },
       privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string,
       options: { expiresIn: process.env.REFRESH_TOKEN_EXPIRE_DAYS }
     })
   }
   //hàm nhận vào userId và bỏ vào payload để tạo Email verify token
-  private signEmailVerifyToken(userId: string) {
+  private signEmailVerifyToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return signToken({
-      payload: { user_id: userId, token_type: TokenType.EmailVerifyToken },
+      payload: { user_id, token_type: TokenType.EmailVerifyToken, verify },
       privateKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string,
       options: { expiresIn: process.env.EMAIL_VERIFY_TOKEN_EXPIRE_DAYS }
     })
   }
 
-  private signEmailForgotPasswordToken(userId: string) {
+  private signEmailForgotPasswordToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return signToken({
-      payload: { user_id: userId, token_type: TokenType.ForgotPassword },
+      payload: { user_id, token_type: TokenType.ForgotPassword, verify },
       privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string,
       options: { expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRE_DAYS }
     })
   }
 
-  async signAccessAndRefreshToken(userId: string) {
-    return Promise.all([this.signAccessToken(userId), this.signRefreshToken(userId)])
+  async signAccessAndRefreshToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
+    return Promise.all([this.signAccessToken({ user_id, verify }), this.signRefreshToken({ user_id, verify })])
   }
   //   async loginService(email: string, password: string) {
   //     return 'Hello World'
@@ -92,7 +94,10 @@ class usersServices {
   async registerService(payload: RegisterReqBody) {
     try {
       const user_id = new ObjectId()
-      const email_verify_token = await this.signEmailVerifyToken(user_id.toString())
+      const email_verify_token = await this.signEmailVerifyToken({
+        user_id: user_id.toString(),
+        verify: UserVerifyStatus.Unverified
+      })
       await mongodbDatabase.getUsers().insertOne(
         new User({
           ...payload,
@@ -102,7 +107,10 @@ class usersServices {
           email_verify_token: email_verify_token
         })
       )
-      const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(user_id.toString())
+      const [accessToken, refreshToken] = await this.signAccessAndRefreshToken({
+        user_id: user_id.toString(),
+        verify: UserVerifyStatus.Unverified
+      })
       await mongodbDatabase.getRefreshToken().insertOne(
         new RefreshToken({
           token: refreshToken,
@@ -119,12 +127,15 @@ class usersServices {
     }
   }
 
-  async loginService(userId: string) {
-    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(userId)
+  async loginService({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
+    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken({
+      user_id,
+      verify
+    })
     await mongodbDatabase.getRefreshToken().insertOne(
       new RefreshToken({
         token: refreshToken,
-        user_id: new ObjectId(userId)
+        user_id: new ObjectId(user_id)
       })
     )
     return { accessToken, refreshToken }
@@ -135,54 +146,57 @@ class usersServices {
     return { message: USERS_MESSAGES.LOGOUT_SUCCESS }
   }
 
-  async emailVerifyTokenService(userId: string) {
-    await mongodbDatabase.getUsers().updateOne({ _id: new ObjectId(userId) }, [
+  async emailVerifyTokenService(user_id: string) {
+    await mongodbDatabase.getUsers().updateOne({ _id: new ObjectId(user_id) }, [
       {
         $set: {
           email_verify_token: '',
-          verify: 1,
+          verify: UserVerifyStatus.Verified,
           updated_at: '$$NOW'
         }
       }
     ])
     //tạo ra access token và refresh token
-    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(userId)
+    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken({
+      user_id,
+      verify: UserVerifyStatus.Verified
+    })
     //lưu refresh token vào database
     await mongodbDatabase.getRefreshToken().insertOne(
       new RefreshToken({
         token: refreshToken,
-        user_id: new ObjectId(userId)
+        user_id: new ObjectId(user_id)
       })
     )
     return { accessToken, refreshToken }
   }
 
-  async resendVerifyEmailService(userId: string) {
-    try {
-      const user_id = new ObjectId()
-      const email_verify_token = await this.signEmailVerifyToken(user_id.toString())
-      await mongodbDatabase.getUsers().updateOne({ _id: new ObjectId(userId) }, [
-        {
-          $set: {
-            email_verify_token,
-            updated_at: '$$NOW'
-          }
+  async resendVerifyEmailService(user_id: string) {
+    const email_verify_token = await this.signEmailVerifyToken({
+      user_id,
+      verify: UserVerifyStatus.Unverified
+    })
+    await mongodbDatabase.getUsers().updateOne({ _id: new ObjectId(user_id) }, [
+      {
+        $set: {
+          email_verify_token,
+          updated_at: '$$NOW'
         }
-      ])
-      //giả lập gửi mail
-      console.log(email_verify_token)
-      return { message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS }
-    } catch (error) {
-      console.log(error)
-      throw new ErrorWithStatus({ message: 'User created fail', status: 500 })
-    }
+      }
+    ])
+    //giả lập gửi mail
+    console.log(email_verify_token)
+    return { message: USERS_MESSAGES.RESEND_EMAIL_VERIFY_SUCCESS }
   }
 
-  async forgotPasswordService(userId: string) {
+  async forgotPasswordService({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     //tạo ra forgot password token
-    const forgot_password_token = await this.signEmailForgotPasswordToken(userId)
+    const forgot_password_token = await this.signEmailForgotPasswordToken({
+      user_id,
+      verify
+    })
     //update lại user
-    await mongodbDatabase.getUsers().updateOne({ _id: new ObjectId(userId) }, [
+    await mongodbDatabase.getUsers().updateOne({ _id: new ObjectId(user_id) }, [
       {
         $set: {
           forgot_password_token,
