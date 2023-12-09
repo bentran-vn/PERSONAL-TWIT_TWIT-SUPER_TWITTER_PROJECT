@@ -3,10 +3,11 @@ import { verify } from 'crypto'
 import { get } from 'lodash'
 import { ObjectId } from 'mongodb'
 import { TokenType, UserVerifyStatus } from '~/constants/enums'
+import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGES } from '~/constants/messages'
 import MongodbDatabase from '~/database/MongoDbConnection'
 import { ErrorWithStatus } from '~/models/Error'
-import { RegisterReqBody } from '~/models/request/Users.request'
+import { RegisterReqBody, UpdateMeReqBody } from '~/models/request/Users.request'
 import RefreshToken from '~/models/shemas/RefreshToken'
 import User from '~/models/shemas/Users.shemas'
 import { hashPassword } from '~/utils/cryto'
@@ -102,6 +103,7 @@ class usersServices {
         new User({
           ...payload,
           _id: user_id,
+          username: `user${user_id.toString()}`,
           date_of_birth: new Date(payload.date_of_birth),
           password: hashPassword(payload.password),
           email_verify_token: email_verify_token
@@ -221,6 +223,56 @@ class usersServices {
       }
     ])
     return { message: USERS_MESSAGES.RESET_PASSWORD_SUCCESS }
+  }
+
+  async updateMeService(user_id: string, payload: UpdateMeReqBody) {
+    const _payload = payload.date_of_birth ? { ...payload, date_of_birth: new Date(payload.date_of_birth) } : payload
+    //cập nhập _payload vào database
+    const user = await mongodbDatabase.getUsers().findOneAndUpdate(
+      { _id: new ObjectId(user_id) },
+      [
+        {
+          $set: {
+            ..._payload,
+            updated_at: '$$NOW'
+          }
+        }
+      ],
+      {
+        returnDocument: 'after',
+        projection: {
+          password: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0,
+          verify: 0
+        }
+      }
+    )
+    return user
+  }
+
+  async getProfileService(username: string) {
+    const user = await mongodbDatabase.getUsers().findOne(
+      { username },
+      {
+        projection: {
+          password: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0,
+          verify: 0,
+          refresh_tokens: 0,
+          created_at: 0,
+          updatedd_at: 0
+        }
+      }
+    )
+    if (!user) {
+      throw new ErrorWithStatus({
+        message: USERS_MESSAGES.USER_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    }
+    return user
   }
 }
 

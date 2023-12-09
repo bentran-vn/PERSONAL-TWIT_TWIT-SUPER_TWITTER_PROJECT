@@ -3,10 +3,12 @@ import usersServices from '~/services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
 import {
   ForgotPasswordReqBody,
+  GetProfileReqParams,
   LoginReqBody,
   LogoutReqBody,
   RegisterReqBody,
   TokenPayload,
+  UpdateMeReqBody,
   VerifyEmailReqBody
 } from '~/models/request/Users.request'
 import User from '~/models/shemas/Users.shemas'
@@ -139,5 +141,24 @@ export const getMeController = async (req: Request, res: Response) => {
   return res.json({
     message: USERS_MESSAGES.GET_ME_SUCCESS,
     user
+  })
+}
+
+export const updateMeController = async (req: Request<ParamsDictionary, any, UpdateMeReqBody>, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const { body: UpdateMeReqBody } = req
+  const result = await usersServiceInstance.updateMeService(user_id, UpdateMeReqBody)
+  return res.json({
+    message: USERS_MESSAGES.UPDATE_ME_SUCCESS,
+    result
+  })
+}
+
+export const getProfileController = async (req: Request<GetProfileReqParams>, res: Response) => {
+  const { username } = req.params
+  const user = await usersServiceInstance.getProfileService(username)
+  return res.json({
+    message: USERS_MESSAGES.GET_PROFILE_SUCCESS,
+    result: user
   })
 }
