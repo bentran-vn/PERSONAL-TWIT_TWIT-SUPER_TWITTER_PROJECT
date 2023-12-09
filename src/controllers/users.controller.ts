@@ -25,8 +25,8 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
   return res.json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
     userId: user_id,
-    accessToken: accessToken,
-    refreshToken: refreshToken
+    access_token: accessToken,
+    refresh_token: refreshToken
   })
 }
 
@@ -130,5 +130,15 @@ export const resetPasswordController = async (
   const result = await usersServiceInstance.resetPasswordService({ user_id, password })
   return res.json({
     result
+  })
+}
+
+export const getMeController = async (req: Request, res: Response) => {
+  //muốn lấy thông tin của user thì cần phải có userId
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const user = await usersServiceInstance.getMe(user_id)
+  return res.json({
+    message: USERS_MESSAGES.GET_ME_SUCCESS,
+    user
   })
 }

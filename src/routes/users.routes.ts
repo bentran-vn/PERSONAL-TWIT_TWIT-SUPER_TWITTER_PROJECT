@@ -2,6 +2,7 @@ import { Router } from 'express'
 import {
   emailVerifyTokenController,
   forgotPasswordController,
+  getMeController,
   loginController,
   logoutController,
   registerController,
@@ -21,9 +22,9 @@ import {
 } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handlers'
 
-const usersRoute = Router()
+const usersRouter = Router()
 
-usersRoute.get('/login', loginValidator, wrapAsync(loginController))
+usersRouter.get('/login', loginValidator, wrapAsync(loginController))
 
 /*
 Description: Register a new user
@@ -37,7 +38,7 @@ body: {
     date_of_birth: string theo chuẩn ISO 8601
 }
 */
-usersRoute.post('/register', registerValidator, wrapAsync(registerController))
+usersRouter.post('/register', registerValidator, wrapAsync(registerController))
 
 /**
 Description: Logout an account
@@ -46,7 +47,7 @@ Method: POST
 headers: { Authorization: Bearer <access_token> }
 body: { refreshToken: string }
  */
-usersRoute.post('/logout', accessTokenValidator, refreshTokenValidator, wrapAsync(logoutController))
+usersRouter.post('/logout', accessTokenValidator, refreshTokenValidator, wrapAsync(logoutController))
 
 /**
 Description: Refresh access token
@@ -57,7 +58,7 @@ sever kiểm tra token có hợp lệ không,
 thì từ decoded.email_verify_token lấy ra user_id
 và vào user_id đó để update lại email_verify_token thành null, verified_email thành 1,update_at
  */
-usersRoute.post('/verify-email', emailVerifyTokenValidator, wrapAsync(emailVerifyTokenController))
+usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapAsync(emailVerifyTokenController))
 
 /**
 Description: Resend email verify token
@@ -68,7 +69,7 @@ Path: /users/resend-verify-email
 hearders: { Authorization: Bearer <access_token> }
 //đăng nhập mới được resend
  */
-usersRoute.post('/resend-verify-email', accessTokenValidator, wrapAsync(resendVerifyEmailController))
+usersRouter.post('/resend-verify-email', accessTokenValidator, wrapAsync(resendVerifyEmailController))
 
 /**
 Description: khi người dùng quên mật khẩu, họ gửi email để xin mình tạo cho họ một forgot_password_token
@@ -76,7 +77,7 @@ Path: /users/forgot-password
 method: POST
 body: { email: string }
 */
-usersRoute.post('/forgot-password', forgotPasswordValidator, wrapAsync(forgotPasswordController))
+usersRouter.post('/forgot-password', forgotPasswordValidator, wrapAsync(forgotPasswordController))
 
 /**
 Description: khi người dùng nhấp vào link forgot-password,
@@ -87,7 +88,7 @@ Path: /users/verify-forgot-password
 method: POST
 body: { forgot_password_token: string }
  */
-usersRoute.post(
+usersRouter.post(
   '/verify-forgot-password',
   verifyForgotPasswordTokenValidator,
   wrapAsync(verifyForgotPasswordTokenController)
@@ -103,11 +104,20 @@ body: {
     confirmPassword: string
   }
  */
-usersRoute.post(
+usersRouter.post(
   '/reset-password',
   resetPasswordValidator,
   verifyForgotPasswordTokenValidator,
   wrapAsync(resetPasswordController)
 )
 
-export default usersRoute
+/**
+description: lấy thông tin của user đang đăng nhập
+path: /users/me
+method: GET
+headers: { Authorization: Bearer <access_token> }
+body: {}
+*/
+usersRouter.get('/me', accessTokenValidator, wrapAsync(getMeController))
+
+export default usersRouter

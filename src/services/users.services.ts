@@ -28,6 +28,22 @@ class usersServices {
     return Promise.resolve(mongodbDatabase.getUsers().findOne({ _id: new ObjectId(userId) }))
   }
 
+  async getMe(userId: string) {
+    return Promise.resolve(
+      mongodbDatabase.getUsers().findOne(
+        { _id: new ObjectId(userId) },
+        {
+          projection: {
+            password: 0,
+            email_verify_token: 0,
+            forgot_password_token: 0,
+            verify: 0
+          }
+        }
+      )
+    )
+  }
+
   //hàm nhận vào userId và bỏ vào payload để tạo Access token
   private signAccessToken(userId: string) {
     return signToken({
