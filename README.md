@@ -1,5 +1,5 @@
 <h1> TWIT_TWIT <br> TWITTER COVERS PLATFORMS </h1>
-This is a "<i>Self Training</i> to create a software system with scabability, manageability and systematic design."
+This is a "<i>Self Training</i>" project. That create a software system with scabability, manageability and systematic design.
 
 # 1. Techstacks
 
