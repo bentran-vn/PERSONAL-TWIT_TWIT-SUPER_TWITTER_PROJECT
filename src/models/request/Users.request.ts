@@ -27,3 +27,9 @@ export interface TokenPayload extends JwtPayload {
 export interface VerifyEmailReqBody {
   email_verify_token: string
 }
+
+export interface ForgotPasswordReqBody {
+  forgot_password_token: string
+  password: string
+  confirm_new_password: string
+}

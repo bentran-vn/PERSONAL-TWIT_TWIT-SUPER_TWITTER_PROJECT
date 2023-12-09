@@ -6,6 +6,7 @@ import {
   logoutController,
   registerController,
   resendVerifyEmailController,
+  resetPasswordController,
   verifyForgotPasswordTokenController
 } from '~/controllers/users.controller'
 import {
@@ -15,6 +16,7 @@ import {
   loginValidator,
   refreshTokenValidator,
   registerValidator,
+  resetPasswordValidator,
   verifyForgotPasswordTokenValidator
 } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handlers'
@@ -90,4 +92,22 @@ usersRoute.post(
   verifyForgotPasswordTokenValidator,
   wrapAsync(verifyForgotPasswordTokenController)
 )
+
+/**
+Description: reset password
+Path: /users/reset-password
+method: POST
+body: {
+    forgot_password_token: string
+    password: string
+    confirmPassword: string
+  }
+ */
+usersRoute.post(
+  '/reset-password',
+  resetPasswordValidator,
+  verifyForgotPasswordTokenValidator,
+  wrapAsync(resetPasswordController)
+)
+
 export default usersRoute
