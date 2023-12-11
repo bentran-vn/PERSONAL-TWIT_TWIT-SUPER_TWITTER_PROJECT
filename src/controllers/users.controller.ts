@@ -1,7 +1,8 @@
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import usersServices from '~/services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
 import {
+  ChangePasswordReqBody,
   FollowReqBody,
   ForgotPasswordReqBody,
   GetProfileReqParams,
@@ -179,6 +180,28 @@ export const unfollowController = async (req: Request<UnfollowReqParams>, res: R
   const { followed_user_id } = req.params
   const result = await usersServiceInstance.unfollowService(user_id, followed_user_id)
   return res.json({
+    result
+  })
+}
+
+export const changePasswordController = async (
+  req: Request<ParamsDictionary, any, ChangePasswordReqBody>,
+  res: Response
+) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const { password } = req.body
+  const result = await usersServiceInstance.changePasswordService(user_id, password)
+  return res.json({
+    result
+  })
+}
+
+export const refreshTokenController = async (req: Request<ParamsDictionary, any, any>, res: Response) => {
+  const { refresh_token } = req.body
+  const { user_id, verify } = req.decoded_refresh_token as TokenPayload
+  const result = await usersServiceInstance.refreshTokenService({ user_id, verify, refresh_token })
+  return res.json({
+    message: USERS_MESSAGES.REFRESH_TOKEN_SUCCESS,
     result
   })
 }

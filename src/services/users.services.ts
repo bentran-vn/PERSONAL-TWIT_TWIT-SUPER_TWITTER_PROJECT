@@ -29,6 +29,10 @@ class usersServices {
     return Promise.resolve(mongodbDatabase.getUsers().findOne({ _id: new ObjectId(userId) }))
   }
 
+  async getUserByUsername(username: string) {
+    return Promise.resolve(mongodbDatabase.getUsers().findOne({ username }))
+  }
+
   async getMe(userId: string) {
     return Promise.resolve(
       mongodbDatabase.getUsers().findOne(
@@ -81,9 +85,6 @@ class usersServices {
   async signAccessAndRefreshToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return Promise.all([this.signAccessToken({ user_id, verify }), this.signRefreshToken({ user_id, verify })])
   }
-  //   async loginService(email: string, password: string) {
-  //     return 'Hello World'
-  //   }
 
   async checkEmailService(email: string) {
     const result = await mongodbDatabase.getUsers().findOne({ email })
@@ -300,6 +301,43 @@ class usersServices {
       .getFollowers()
       .deleteOne({ user_id: new ObjectId(user_id), followed_user_id: new ObjectId(followed_user_id) })
     return { message: USERS_MESSAGES.UNFOLLOW_SUCCESS }
+  }
+
+  async changePasswordService(user_id: string, password: string) {
+    const user = await this.getUserById(user_id)
+    if (!user) {
+      throw new ErrorWithStatus({
+        message: USERS_MESSAGES.USER_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    }
+    await mongodbDatabase.getUsers().updateOne({ _id: new ObjectId(user_id) }, [
+      {
+        $set: {
+          password: hashPassword(password),
+          updated_at: '$$NOW'
+        }
+      }
+    ])
+    return { message: USERS_MESSAGES.RESET_PASSWORD_SUCCESS }
+  }
+
+  async refreshTokenService({
+    user_id,
+    verify,
+    refresh_token
+  }: {
+    user_id: string
+    verify: UserVerifyStatus
+    refresh_token: string
+  }) {
+    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken({ user_id, verify })
+    //Xóa, lưu refresh token vào database
+    await mongodbDatabase.getRefreshToken().deleteOne({ token: refresh_token })
+    await mongodbDatabase
+      .getRefreshToken()
+      .insertOne(new RefreshToken({ token: refreshToken, user_id: new ObjectId(user_id) }))
+    return { accessToken, refreshToken }
   }
 }
 

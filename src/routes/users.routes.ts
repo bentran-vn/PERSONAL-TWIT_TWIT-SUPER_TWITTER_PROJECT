@@ -1,12 +1,13 @@
 import { Router } from 'express'
 import {
+  changePasswordController,
   emailVerifyTokenController,
-  followController,
   forgotPasswordController,
   getMeController,
   getProfileController,
   loginController,
   logoutController,
+  refreshTokenController,
   registerController,
   resendVerifyEmailController,
   resetPasswordController,
@@ -17,19 +18,18 @@ import {
 import { filterMiddleware } from '~/middlewares/common.middlewares'
 import {
   accessTokenValidator,
+  changePasswordValidator,
   emailVerifyTokenValidator,
-  followValidator,
   forgotPasswordValidator,
   loginValidator,
   refreshTokenValidator,
   registerValidator,
   resetPasswordValidator,
-  unfollowValidator,
   updateMeValidator,
   verifiedUserValidator,
   verifyForgotPasswordTokenValidator
 } from '~/middlewares/users.middlewares'
-import { UnfollowReqParams, UpdateMeReqBody } from '~/models/request/Users.request'
+import { UpdateMeReqBody } from '~/models/request/Users.request'
 import { wrapAsync } from '~/utils/handlers'
 
 const usersRouter = Router()
@@ -155,5 +155,28 @@ method: get
 không cần header vì, chưa đăng nhập cũng có thể xem
 */
 usersRouter.get('/:username', wrapAsync(getProfileController))
+
+/**
+ * Description: Change Password
+ * Path: /users/change-password
+ * Method: PUT
+ * Headers: { Authorization: Bearer <access_token> }
+ * body: { old_password: string, password: string, confirm_password: string }
+ */
+usersRouter.put(
+  '/change-password',
+  accessTokenValidator,
+  verifiedUserValidator,
+  changePasswordValidator,
+  wrapAsync(changePasswordController)
+)
+
+/**
+ * Discription: Refresh Token
+ * Path: /users/refresh-token
+ * Method: POST
+ * body: { refresh_token: string }
+ */
+usersRouter.post('/refresh-token', refreshTokenValidator, wrapAsync(refreshTokenController))
 
 export default usersRouter

@@ -8,6 +8,11 @@ export const USERS_MESSAGES = {
   EMAIL_ALREADY_EXISTS: 'Email already exists',
   EMAIL_IS_REQUIRED: 'Email is required',
   EMAIL_IS_INVALID: 'Email is invalid',
+  EMAIL_ALREADY_VERIFIED_BEFORE: 'Email already verified before',
+  EMAIL_VERIFY_SUCCESS: 'Email verify successfully',
+  EMAIL_OR_PASSWORD_IS_INCORRECT: 'Email or password is incorrect',
+  EMAIL_VERIFY_TOKEN_IS_REQUIRED: 'Email verify token is required',
+  EMAIL_VERIFY_TOKEN_IS_INCORRECT: 'Email verify token is incorrect',
   //password
   PASSWORD_IS_REQUIRED: 'Password is required',
   PASSWORD_MUST_BE_A_STRING: 'Password must be a string',
@@ -24,7 +29,9 @@ export const USERS_MESSAGES = {
   //dateOfBirth
   DATE_OF_BIRTH_BE_ISO8601: 'Date of birth must be ISO8601',
   //user
-  EMAIL_OR_PASSWORD_IS_INCORRECT: 'Email or password is incorrect',
+  USER_NOT_FOUND: 'User not found',
+  USER_BANNED: 'User banned',
+  //other
   LOGIN_SUCCESS: 'Login successfully',
   REGISTER_SUCCESS: 'Register successfully',
   LOGOUT_SUCCESS: 'Logout successfully',
@@ -32,12 +39,6 @@ export const USERS_MESSAGES = {
   REFRESH_TOKEN_IS_REQUIRED: 'Refresh token is required',
   REFRESH_TOKEN_IS_INVALID: 'Refresh token is invalid',
   USED_REFRESH_TOKEN_OR_NOT_EXISTS: 'Used refresh token or not exists',
-  EMAIL_VERIFY_TOKEN_IS_REQUIRED: 'Email verify token is required',
-  USER_NOT_FOUND: 'User not found',
-  EMAIL_ALREADY_VERIFIED_BEFORE: 'Email already verified before',
-  EMAIL_VERIFY_SUCCESS: 'Email verify successfully',
-  USER_BANNED: 'User banned',
-  EMAIL_VERIFY_TOKEN_IS_INCORRECT: 'Email verify token is incorrect',
   CHECK_EMAIL_TO_RESET_PASSWORD: 'Check email to reset password',
   FORGOR_PASSWORD_TOKEN_IS_REQUIRED: 'Forgot password token is required',
   FORGOR_PASSWORD_TOKEN_IS_INCORRECT: 'Forgot password token is incorrect',
@@ -64,5 +65,9 @@ export const USERS_MESSAGES = {
   FOLLOW_SUCCESS: 'Follow successfully',
   INVALID_USER_ID: 'Invalid user id',
   NOT_FOLLOWED: 'Not followed',
-  UNFOLLOW_SUCCESS: 'Unfollow successfully'
+  UNFOLLOW_SUCCESS: 'Unfollow successfully',
+  USERNAME_ALREADY_EXISTS: 'Username already exists',
+  OLD_PASSWORD_IS_INCORRECT: 'Old password is incorrect',
+  CONFIRM_NEW_PASSWORD_MUST_BE_THE_SAME_AS_NEW_PASSWORD: 'Confirm new password must be the same as new password',
+  REFRESH_TOKEN_SUCCESS: 'Refresh token successfully'
 } as const
