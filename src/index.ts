@@ -11,7 +11,7 @@ import followerRoutes from './routes/followers.routes'
 
 //Config Server
 const app = express()
-const PORT = 3000 || process.env.PORT
+const PORT = 4000 || process.env.SERVER_PORT
 
 //Config Database
 const database = Database.getInstance()
