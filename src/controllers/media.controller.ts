@@ -1,6 +1,5 @@
 import { Request, Response } from 'express'
 import MediasServices from '~/services/medias.services'
-import { handleUploadSingleImage } from '~/utils/file'
 
 const mediasServicesInstance = MediasServices.getInstance()
 
