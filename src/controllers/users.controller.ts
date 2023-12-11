@@ -205,3 +205,10 @@ export const refreshTokenController = async (req: Request<ParamsDictionary, any,
     result
   })
 }
+
+export const oAuthController = async (req: Request, res: Response) => {
+  const { code } = req.query
+  const { access_token, refresh_token, new_user } = await usersServiceInstance.oAuthService(code as string)
+  const urlRedirect = `${process.env.GOOGLE_REDIRECT_CALLBACK}?access_token=${access_token}&refresh_token=${refresh_token}&new_user=${new_user}`
+  return res.redirect(urlRedirect)
+}

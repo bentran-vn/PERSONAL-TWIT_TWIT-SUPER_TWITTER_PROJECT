@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { ObjectId } from 'mongodb'
 import { TokenType, UserVerifyStatus } from '~/constants/enums'
 import HTTP_STATUS from '~/constants/httpStatus'
@@ -338,6 +339,95 @@ class usersServices {
       .getRefreshToken()
       .insertOne(new RefreshToken({ token: refreshToken, user_id: new ObjectId(user_id) }))
     return { accessToken, refreshToken }
+  }
+
+  private async getOAuthGoogleToke(code: string) {
+    const body = {
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+      grant_type: 'authorization_code'
+    }
+
+    const { data } = await axios.post('https://oauth2.googleapis.com/token', body, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    return data as {
+      access_token: string
+      id_token: string
+    }
+  }
+
+  private async getGoogleUserInfo(access_token: string, id_token: string) {
+    const { data } = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+      params: {
+        access_token,
+        alt: 'json'
+      },
+      headers: {
+        Authorization: `Bearer ${id_token}`
+      }
+    })
+    return data as {
+      id: string
+      email: string
+      email_verified: string
+      name: string
+      given_name: string
+      family_name: string
+      picture: string
+      locale: string
+    }
+  }
+
+  async oAuthService(code: string) {
+    const { id_token, access_token } = await this.getOAuthGoogleToke(code)
+    const userInfor = await this.getGoogleUserInfo(access_token, id_token)
+    //kiểm tra xem email đã được đăng kí chưa
+    if (!userInfor.email_verified) {
+      throw new ErrorWithStatus({
+        message: USERS_MESSAGES.EMAIL_NOT_VERIFIED,
+        status: HTTP_STATUS.UNAUTHORIZED
+      })
+    }
+    const user = await mongodbDatabase.getUsers().findOne({ email: userInfor.email })
+    if (!user) {
+      throw new ErrorWithStatus({
+        message: USERS_MESSAGES.USER_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    }
+    if (user) {
+      const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
+        user_id: user._id.toString(),
+        verify: user.verify
+      })
+      await mongodbDatabase.getRefreshToken().insertOne(
+        new RefreshToken({
+          token: refresh_token,
+          user_id: new ObjectId(user._id.toString())
+        })
+      )
+      return { access_token, refresh_token, new_user: 0, verify: user.verify }
+    } else {
+      const password = Math.random().toString(36).slice(1, 15)
+      const data = await this.registerService({
+        email: userInfor.email,
+        name: userInfor.name,
+        password,
+        confirmPassword: password,
+        date_of_birth: new Date().toISOString()
+      })
+      return {
+        ...data,
+        new_user: 1,
+        verify: UserVerifyStatus.Unverified
+      }
+    }
   }
 }
 
