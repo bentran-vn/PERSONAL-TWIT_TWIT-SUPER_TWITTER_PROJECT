@@ -34,4 +34,5 @@ app.use(defaultErrorHandler)
 //Server Running
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
+  console.log(`Server URL: http://localhost:${PORT}`)
 })
