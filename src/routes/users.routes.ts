@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   emailVerifyTokenController,
+  followController,
   forgotPasswordController,
   getMeController,
   getProfileController,
@@ -9,6 +10,7 @@ import {
   registerController,
   resendVerifyEmailController,
   resetPasswordController,
+  unfollowController,
   updateMeController,
   verifyForgotPasswordTokenController
 } from '~/controllers/users.controller'
@@ -16,16 +18,18 @@ import { filterMiddleware } from '~/middlewares/common.middlewares'
 import {
   accessTokenValidator,
   emailVerifyTokenValidator,
+  followValidator,
   forgotPasswordValidator,
   loginValidator,
   refreshTokenValidator,
   registerValidator,
   resetPasswordValidator,
+  unfollowValidator,
   updateMeValidator,
   verifiedUserValidator,
   verifyForgotPasswordTokenValidator
 } from '~/middlewares/users.middlewares'
-import { UpdateMeReqBody } from '~/models/request/Users.request'
+import { UnfollowReqParams, UpdateMeReqBody } from '~/models/request/Users.request'
 import { wrapAsync } from '~/utils/handlers'
 
 const usersRouter = Router()

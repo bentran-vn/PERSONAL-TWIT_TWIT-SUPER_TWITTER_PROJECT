@@ -1,6 +1,3 @@
-import { log } from 'console'
-import { verify } from 'crypto'
-import { get } from 'lodash'
 import { ObjectId } from 'mongodb'
 import { TokenType, UserVerifyStatus } from '~/constants/enums'
 import HTTP_STATUS from '~/constants/httpStatus'
@@ -8,6 +5,7 @@ import { USERS_MESSAGES } from '~/constants/messages'
 import MongodbDatabase from '~/database/MongoDbConnection'
 import { ErrorWithStatus } from '~/models/Error'
 import { RegisterReqBody, UpdateMeReqBody } from '~/models/request/Users.request'
+import Follower from '~/models/shemas/Follower.schemas'
 import RefreshToken from '~/models/shemas/RefreshToken'
 import User from '~/models/shemas/Users.shemas'
 import { hashPassword } from '~/utils/cryto'
@@ -273,6 +271,35 @@ class usersServices {
       })
     }
     return user
+  }
+
+  async followService(user_id: string, followed_user_id: string) {
+    const isFollowed = await mongodbDatabase
+      .getFollowers()
+      .findOne({ user_id: new ObjectId(user_id), followed_user_id: new ObjectId(followed_user_id) })
+    if (isFollowed) {
+      return { message: USERS_MESSAGES.FOLLOWED }
+    }
+    await mongodbDatabase.getFollowers().insertOne(
+      new Follower({
+        user_id: new ObjectId(user_id),
+        followed_user_id: new ObjectId(followed_user_id)
+      })
+    )
+    return { message: USERS_MESSAGES.FOLLOW_SUCCESS }
+  }
+
+  async unfollowService(user_id: string, followed_user_id: string) {
+    const isFollowed = await mongodbDatabase
+      .getFollowers()
+      .findOne({ user_id: new ObjectId(user_id), followed_user_id: new ObjectId(followed_user_id) })
+    if (!isFollowed) {
+      return { message: USERS_MESSAGES.NOT_FOLLOWED }
+    }
+    await mongodbDatabase
+      .getFollowers()
+      .deleteOne({ user_id: new ObjectId(user_id), followed_user_id: new ObjectId(followed_user_id) })
+    return { message: USERS_MESSAGES.UNFOLLOW_SUCCESS }
   }
 }
 

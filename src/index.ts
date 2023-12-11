@@ -7,6 +7,7 @@ import MongodbDatabase from './database/MongoDbConnection'
 //Imports Routes
 import usersRouter from './routes/users.routes'
 import { defaultErrorHandler } from './middlewares/error.middlewares'
+import followerRoutes from './routes/followers.routes'
 
 //Config Server
 const app = express()
@@ -25,6 +26,7 @@ app.use(express.json())
 
 //Implement Routes
 app.use('/users', usersRouter)
+app.use('/followers', followerRoutes)
 
 //Implement Error Handler
 app.use(defaultErrorHandler)

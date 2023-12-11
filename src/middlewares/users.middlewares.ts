@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { ParamSchema, checkSchema } from 'express-validator'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import { capitalize } from 'lodash'
+import { ObjectId } from 'mongodb'
 import { UserVerifyStatus } from '~/constants/enums'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGES } from '~/constants/messages'
@@ -112,6 +113,29 @@ const imageSchema: ParamSchema = {
       max: 400
     },
     errorMessage: USERS_MESSAGES.IMAGE_URL_LENGTH_MUST_BE_FROM_1_TO_400
+  }
+}
+
+const userIdSchema: ParamSchema = {
+  custom: {
+    options: async (value, { req }) => {
+      if (!ObjectId.isValid(value)) {
+        throw new ErrorWithStatus({
+          message: USERS_MESSAGES.INVALID_USER_ID,
+          status: HTTP_STATUS.NOT_FOUND
+        })
+      }
+      //check in database
+      const user = await usersServiceInstance.getUserById(value)
+      if (!user) {
+        throw new ErrorWithStatus({
+          message: USERS_MESSAGES.INVALID_USER_ID,
+          status: HTTP_STATUS.NOT_FOUND
+        })
+      }
+      //pass the check
+      return true
+    }
   }
 }
 
@@ -493,5 +517,23 @@ export const updateMeValidator = validate(
       cover_photo: imageSchema
     },
     ['body']
+  )
+)
+
+export const followValidator = validate(
+  checkSchema(
+    {
+      followed_user_id: userIdSchema
+    },
+    ['body']
+  )
+)
+
+export const unfollowValidator = validate(
+  checkSchema(
+    {
+      followed_user_id: userIdSchema
+    },
+    ['params']
   )
 )
