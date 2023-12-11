@@ -1,7 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import { Request } from 'express'
-import formidable from 'formidable'
+import formidable, { File } from 'formidable'
 import { ErrorWithStatus } from '~/models/Error'
 import HTTP_STATUS from '~/constants/httpStatus'
 
@@ -35,7 +35,7 @@ export const handleUploadSingleImage = async (req: Request) => {
       return valid
     }
   })
-  return new Promise((resolve, reject) => {
+  return new Promise<File>((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
       if (err) {
         return reject(err)
@@ -48,7 +48,7 @@ export const handleUploadSingleImage = async (req: Request) => {
           })
         )
       }
-      return resolve(files)
+      return resolve((files.image as File[])[0])
     })
   })
 }
