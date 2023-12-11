@@ -8,10 +8,15 @@ import MongodbDatabase from './database/MongoDbConnection'
 import usersRouter from './routes/users.routes'
 import { defaultErrorHandler } from './middlewares/error.middlewares'
 import followerRoutes from './routes/followers.routes'
+import mediaRouter from './routes/media.routes'
+import { initFolder } from './utils/file'
 
 //Config Server
 const app = express()
 const PORT = 4000 || process.env.SERVER_PORT
+
+//Init Folder
+initFolder()
 
 //Config Database
 const database = Database.getInstance()
@@ -27,6 +32,7 @@ app.use(express.json())
 //Implement Routes
 app.use('/users', usersRouter)
 app.use('/followers', followerRoutes)
+app.use('/medias', mediaRouter)
 
 //Implement Error Handler
 app.use(defaultErrorHandler)
