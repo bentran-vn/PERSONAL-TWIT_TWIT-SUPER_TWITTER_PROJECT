@@ -4,20 +4,26 @@ import { Request } from 'express'
 import formidable, { File } from 'formidable'
 import { ErrorWithStatus } from '~/models/Error'
 import HTTP_STATUS from '~/constants/httpStatus'
+import { UPLOAD_TEMP_DIR } from '~/constants/dir'
 
 export const initFolder = () => {
-  const uploadFolderPath = path.resolve('uploads')
-  if (!fs.existsSync(uploadFolderPath)) {
-    fs.mkdirSync(uploadFolderPath, {
+  if (!fs.existsSync(UPLOAD_TEMP_DIR)) {
+    fs.mkdirSync(UPLOAD_TEMP_DIR, {
       recursive: true
       //Agree to create folder recursively
     })
   }
 }
 
+export const getNameFromFullname = (filename: string) => {
+  const nameArr = filename.split('.')
+  nameArr.pop()
+  return nameArr.join('.')
+}
+
 export const handleUploadSingleImage = async (req: Request) => {
   const form = formidable({
-    uploadDir: path.resolve('uploads'),
+    uploadDir: path.resolve(UPLOAD_TEMP_DIR),
     maxFiles: 1,
     keepExtensions: true,
     maxFileSize: 300 * 1024,

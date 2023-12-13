@@ -1,20 +1,21 @@
 //Imports Libraries
-import express, { NextFunction, Request, Response } from 'express'
+import express from 'express'
 import 'dotenv/config'
 import Database from './database/Database'
 import MongodbDatabase from './database/MongoDbConnection'
+import { initFolder } from './utils/file'
+import { defaultErrorHandler } from './middlewares/error.middlewares'
 
 //Imports Routes
 import usersRouter from './routes/users.routes'
-import { defaultErrorHandler } from './middlewares/error.middlewares'
 import followerRoutes from './routes/followers.routes'
 import mediaRouter from './routes/media.routes'
-import { initFolder } from './utils/file'
+import { isProduction } from './constants/config'
 
 //Config Server
 const app = express()
-const PORT = 4000 || process.env.SERVER_PORT
-
+const PORT = !isProduction ? `${process.env.SERVER_PORT_DEVELOPER}` : `${process.env.SERVER_PORT_PRODUCTION}`
+const SERVER = !isProduction ? `${process.env.SERVER_URL_DEVELOPER}` : `${process.env.SERVER_URL_PRODUCTION}`
 //Init Folder
 initFolder()
 
@@ -40,5 +41,5 @@ app.use(defaultErrorHandler)
 //Server Running
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
-  console.log(`Server URL: http://localhost:${PORT}`)
+  console.log(`Server URL: ${SERVER}`)
 })

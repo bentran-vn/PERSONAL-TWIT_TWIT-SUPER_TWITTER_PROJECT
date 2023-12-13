@@ -3,6 +3,7 @@ import IConnection from './IConnection'
 import User from '~/models/shemas/Users.shemas'
 import RefreshToken from '~/models/shemas/RefreshToken'
 import Follower from '~/models/shemas/Follower.schemas'
+import MONGODB from './MongoDbUtil'
 
 class MongodbDatabase implements IConnection {
   public connectName: string
@@ -13,10 +14,10 @@ class MongodbDatabase implements IConnection {
   private static instance: MongodbDatabase
 
   private constructor() {
-    this.connectString = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster1.zznsyxx.mongodb.net/?retryWrites=true&w=majority`
+    this.connectString = `mongodb+srv://${MONGODB.username}:${MONGODB.password}@cluster1.zznsyxx.mongodb.net/?retryWrites=true&w=majority`
     this.connectName = 'MongoDB Atlas'
     this.client = new MongoClient(this.connectString)
-    this.db = this.client.db(`${process.env.DB_NAME}`)
+    this.db = this.client.db(`${MONGODB.dbName}`)
   }
 
   public static getInstance(): MongodbDatabase {
