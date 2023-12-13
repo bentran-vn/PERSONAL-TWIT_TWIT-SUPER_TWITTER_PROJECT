@@ -51,8 +51,8 @@ class MediasServices {
         const newFilename = file.newFilename
         return {
           url: isProduction
-            ? `${process.env.SERVER_URL_PRODUCTION}/static/video/${newFilename}`
-            : `${process.env.SERVER_URL_DEVELOPER}/static/video/${newFilename}`,
+            ? `${process.env.SERVER_URL_PRODUCTION}/static/video-stream/${newFilename}`
+            : `${process.env.SERVER_URL_DEVELOPER}/static/video-stream/${newFilename}`,
           type: MediaType.Video
         }
       })
