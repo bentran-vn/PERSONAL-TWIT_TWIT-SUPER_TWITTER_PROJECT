@@ -5,17 +5,20 @@ import Database from './database/Database'
 import MongodbDatabase from './database/MongoDbConnection'
 import { initFolder } from './utils/file'
 import { defaultErrorHandler } from './middlewares/error.middlewares'
+import { isProduction } from './constants/config'
 
 //Imports Routes
 import usersRouter from './routes/users.routes'
 import followerRoutes from './routes/followers.routes'
 import mediaRouter from './routes/media.routes'
-import { isProduction } from './constants/config'
+import staticRouter from './routes/static.routes'
 
 //Config Server
 const app = express()
 const PORT = !isProduction ? `${process.env.SERVER_PORT_DEVELOPER}` : `${process.env.SERVER_PORT_PRODUCTION}`
 const SERVER = !isProduction ? `${process.env.SERVER_URL_DEVELOPER}` : `${process.env.SERVER_URL_PRODUCTION}`
+// app.use('/static', express.static(UPLOAD_DIR))
+
 //Init Folder
 initFolder()
 
@@ -34,6 +37,7 @@ app.use(express.json())
 app.use('/users', usersRouter)
 app.use('/followers', followerRoutes)
 app.use('/medias', mediaRouter)
+app.use('/static', staticRouter)
 
 //Implement Error Handler
 app.use(defaultErrorHandler)

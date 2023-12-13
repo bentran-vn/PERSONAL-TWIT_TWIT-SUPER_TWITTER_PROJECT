@@ -30,8 +30,8 @@ class MediasServices {
     //Delete file in uploads/tmp folder
     fs.unlinkSync(file.filepath)
     return isProduction
-      ? `${process.env.SERVER_URL_PRODUCTION}/medias/${newFilename}`
-      : `${process.env.SERVER_URL_DEVELOPER}/medias/${newFilename}`
+      ? `${process.env.SERVER_URL_PRODUCTION}/static/${newFilename}`
+      : `${process.env.SERVER_URL_DEVELOPER}/static/${newFilename}`
   }
 }
 

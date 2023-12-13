@@ -1,12 +1,29 @@
+import { error } from 'console'
 import { Request, Response } from 'express'
+import path from 'path'
+import { UPLOAD_DIR } from '~/constants/dir'
+import { USERS_MESSAGES } from '~/constants/messages'
+import { ErrorWithStatus } from '~/models/Error'
 import MediasServices from '~/services/medias.services'
 
 const mediasServicesInstance = MediasServices.getInstance()
 
 export const uploadSingleImageController = async (req: Request, res: Response) => {
-  const result = await mediasServicesInstance.handleUploadSingleImageService(req)
+  const url = await mediasServicesInstance.handleUploadSingleImageService(req)
   res.json({
-    message: 'Upload successfully',
-    result
+    message: USERS_MESSAGES.UPLOAD_IMAGE_SUCCESS,
+    result: url
+  })
+}
+
+export const serveImageController = async (req: Request, res: Response) => {
+  const { namefile } = req.params
+  res.sendFile(path.resolve(UPLOAD_DIR, namefile), (error) => {
+    if (error) {
+      throw new ErrorWithStatus({
+        message: error.message,
+        status: 404
+      })
+    }
   })
 }
