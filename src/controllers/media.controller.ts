@@ -65,4 +65,5 @@ export const serveVideoController = async (req: Request, res: Response) => {
   }
   res.writeHead(HTTP_STATUS.PARTIAL_CONTENT, headers)
   const videoStream = fs.createReadStream(videoPath, { start, end })
+  videoStream.pipe(res)
 }
