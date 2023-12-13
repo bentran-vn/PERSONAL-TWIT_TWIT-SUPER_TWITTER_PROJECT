@@ -8,8 +8,8 @@ import MediasServices from '~/services/medias.services'
 
 const mediasServicesInstance = MediasServices.getInstance()
 
-export const uploadSingleImageController = async (req: Request, res: Response) => {
-  const url = await mediasServicesInstance.handleUploadSingleImageService(req)
+export const uploadImageController = async (req: Request, res: Response) => {
+  const url = await mediasServicesInstance.uploadImageService(req)
   res.json({
     message: USERS_MESSAGES.UPLOAD_IMAGE_SUCCESS,
     result: url
