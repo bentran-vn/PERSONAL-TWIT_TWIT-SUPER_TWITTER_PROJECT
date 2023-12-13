@@ -71,5 +71,6 @@ export const USERS_MESSAGES = {
   CONFIRM_NEW_PASSWORD_MUST_BE_THE_SAME_AS_NEW_PASSWORD: 'Confirm new password must be the same as new password',
   REFRESH_TOKEN_SUCCESS: 'Refresh token successfully',
   EMAIL_NOT_VERIFIED: 'Email not verified',
-  UPLOAD_IMAGE_SUCCESS: 'Upload image successfully'
+  UPLOAD_IMAGE_SUCCESS: 'Upload image successfully',
+  UPLOAD_VIDEO_SUCCESS: 'Upload video successfully'
 } as const
