@@ -24,7 +24,9 @@ initFolder()
 
 //Config Database
 const database = Database.getInstance()
-database.connect(MongodbDatabase.getInstance())
+database.connect(MongodbDatabase.getInstance()).then(async () => {
+  await MongodbDatabase.getInstance().indexUser()
+})
 
 //Config Swagger
 

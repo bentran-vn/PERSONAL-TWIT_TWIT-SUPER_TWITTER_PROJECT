@@ -1,9 +1,12 @@
 import { Request, Response } from 'express'
 import path from 'path'
 import { UPLOAD_IMAGE_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
+import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Error'
 import MediasServices from '~/services/medias.services'
+import fs from 'fs'
+import mime from 'mime'
 
 const mediasServicesInstance = MediasServices.getInstance()
 
@@ -34,9 +37,9 @@ export const serveImageController = async (req: Request, res: Response) => {
     }
   })
 }
+
 export const serveVideoController = async (req: Request, res: Response) => {
   const { namefile } = req.params
-<<<<<<< HEAD
   const range = req.headers.range //
   const videoPath = path.resolve(UPLOAD_VIDEO_DIR, namefile)
   if (!range) {
@@ -45,15 +48,18 @@ export const serveVideoController = async (req: Request, res: Response) => {
       status: HTTP_STATUS.BAD_REQUEST
     })
   }
+
   //Get size of video
   const videoSize = fs.statSync(videoPath).size
   const CHUNK_SIZE = 10 ** 6 //1MB
   const start = Number(range.replace(/\D/g, ''))
   const end = Math.min(start + CHUNK_SIZE, videoSize - 1)
+
   //real size of chunk
   const contentLength = end - start + 1
   const contentType = mime.getType(videoPath) || 'video/*'
-  //Response
+
+  // //Response
   const headers = {
     'Content-Range': `bytes ${start}-${end}/${videoSize}`,
     'Accept-Ranges': 'bytes',
@@ -63,7 +69,6 @@ export const serveVideoController = async (req: Request, res: Response) => {
   res.writeHead(HTTP_STATUS.PARTIAL_CONTENT, headers)
   const videoStream = fs.createReadStream(videoPath, { start, end })
   videoStream.pipe(res)
-=======
   return res.sendFile(path.resolve(UPLOAD_VIDEO_DIR, namefile), (error) => {
     if (error) {
       throw new ErrorWithStatus({
@@ -72,5 +77,4 @@ export const serveVideoController = async (req: Request, res: Response) => {
       })
     }
   })
->>>>>>> parent of 6760165 (Streaming video Feature)
 }

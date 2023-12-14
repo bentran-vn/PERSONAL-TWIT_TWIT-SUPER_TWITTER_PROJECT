@@ -42,6 +42,12 @@ class MongodbDatabase implements IConnection {
     return this.db.collection(process.env.DB_USERS_COLLECTION as string)
   }
 
+  async indexUser() {
+    await this.getUsers().createIndex({ email: 1 }, { unique: true })
+    await this.getUsers().createIndex({ username: 1 }, { unique: true })
+    await this.getUsers().createIndex({ email: 1, password: 1 })
+  }
+
   public getRefreshToken(): Collection<RefreshToken> {
     return this.db.collection(process.env.DB_REFRESH_TOKENS_COLLECTION as string)
   }

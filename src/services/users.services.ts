@@ -10,7 +10,7 @@ import Follower from '~/models/shemas/Follower.schemas'
 import RefreshToken from '~/models/shemas/RefreshToken'
 import User from '~/models/shemas/Users.shemas'
 import { hashPassword } from '~/utils/cryto'
-import { signToken } from '~/utils/jwt'
+import { signToken, verifyToken } from '~/utils/jwt'
 
 const mongodbDatabase = MongodbDatabase.getInstance()
 
@@ -24,6 +24,10 @@ class usersServices {
       usersServices.instance = new usersServices()
     }
     return usersServices.instance
+  }
+
+  private async decodeRefreshToken(refreshToken: string) {
+    return await verifyToken({ token: refreshToken, secretOrPulicKey: process.env.JWT_SECRET_REFRESH_TOKEN as string })
   }
 
   async getUserById(userId: string) {
@@ -59,12 +63,19 @@ class usersServices {
     })
   }
   //hàm nhận vào userId và bỏ vào payload để tạo Refresh token
-  private signRefreshToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
-    return signToken({
-      payload: { user_id, token_type: TokenType.Refresh, verify },
-      privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string,
-      options: { expiresIn: process.env.REFRESH_TOKEN_EXPIRE_DAYS }
-    })
+  private signRefreshToken({ user_id, verify, exp }: { user_id: string; verify: UserVerifyStatus; exp?: number }) {
+    if (!exp) {
+      return signToken({
+        payload: { user_id, token_type: TokenType.Refresh, verify },
+        privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string,
+        options: { expiresIn: process.env.REFRESH_TOKEN_EXPIRE_DAYS }
+      })
+    } else {
+      return signToken({
+        payload: { user_id, token_type: TokenType.Refresh, verify, exp },
+        privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string
+      })
+    }
   }
   //hàm nhận vào userId và bỏ vào payload để tạo Email verify token
   private signEmailVerifyToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -113,10 +124,13 @@ class usersServices {
         user_id: user_id.toString(),
         verify: UserVerifyStatus.Unverified
       })
+      const { exp, iat } = await this.decodeRefreshToken(refreshToken)
       await mongodbDatabase.getRefreshToken().insertOne(
         new RefreshToken({
           token: refreshToken,
-          user_id: new ObjectId(user_id.toString())
+          user_id: new ObjectId(user_id.toString()),
+          exp,
+          iat
         })
       )
 
@@ -134,10 +148,13 @@ class usersServices {
       user_id,
       verify
     })
+    const { exp, iat } = await this.decodeRefreshToken(refreshToken)
     await mongodbDatabase.getRefreshToken().insertOne(
       new RefreshToken({
         token: refreshToken,
-        user_id: new ObjectId(user_id)
+        user_id: new ObjectId(user_id),
+        exp,
+        iat
       })
     )
     return { accessToken, refreshToken }
@@ -163,11 +180,14 @@ class usersServices {
       user_id,
       verify: UserVerifyStatus.Verified
     })
+    const { exp, iat } = await this.decodeRefreshToken(refreshToken)
     //lưu refresh token vào database
     await mongodbDatabase.getRefreshToken().insertOne(
       new RefreshToken({
         token: refreshToken,
-        user_id: new ObjectId(user_id)
+        user_id: new ObjectId(user_id),
+        exp,
+        iat
       })
     )
     return { accessToken, refreshToken }
@@ -326,19 +346,25 @@ class usersServices {
   async refreshTokenService({
     user_id,
     verify,
-    refresh_token
+    refresh_token,
+    exp
   }: {
     user_id: string
     verify: UserVerifyStatus
     refresh_token: string
+    exp: number
   }) {
-    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken({ user_id, verify })
+    const [access_token, new_refresh_token] = await Promise.all([
+      this.signAccessToken({ user_id, verify }),
+      this.signRefreshToken({ user_id, verify, exp })
+    ])
+    const { iat } = await this.decodeRefreshToken(refresh_token)
     //Xóa, lưu refresh token vào database
     await mongodbDatabase.getRefreshToken().deleteOne({ token: refresh_token })
     await mongodbDatabase
       .getRefreshToken()
-      .insertOne(new RefreshToken({ token: refreshToken, user_id: new ObjectId(user_id) }))
-    return { accessToken, refreshToken }
+      .insertOne(new RefreshToken({ token: new_refresh_token, user_id: new ObjectId(user_id), exp, iat }))
+    return { access_token, new_refresh_token }
   }
 
   private async getOAuthGoogleToke(code: string) {
@@ -406,10 +432,13 @@ class usersServices {
         user_id: user._id.toString(),
         verify: user.verify
       })
+      const { exp, iat } = await this.decodeRefreshToken(refresh_token)
       await mongodbDatabase.getRefreshToken().insertOne(
         new RefreshToken({
           token: refresh_token,
-          user_id: new ObjectId(user._id.toString())
+          user_id: new ObjectId(user._id.toString()),
+          exp,
+          iat
         })
       )
       return { access_token, refresh_token, new_user: 0, verify: user.verify }

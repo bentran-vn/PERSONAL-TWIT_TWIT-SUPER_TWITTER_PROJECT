@@ -20,6 +20,7 @@
     "@types/formidable": "^3.4.5",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/lodash": "^4.14.202",
+    "@types/mime": "^3.0.4",
     "@types/minimist": "^1.2.5",
     "@types/node": "^20.10.0",
     "@typescript-eslint/eslint-plugin": "^6.13.1",
@@ -45,6 +46,7 @@
     "formidable": "^3.5.1",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
+    "mime": "^3.0.0",
     "minimist": "^1.2.8",
     "mongodb": "^6.3.0",
     "sharp": "^0.33.0"
