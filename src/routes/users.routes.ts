@@ -12,6 +12,7 @@ import {
   registerController,
   resendVerifyEmailController,
   resetPasswordController,
+  unfollowController,
   updateMeController,
   verifyForgotPasswordTokenController
 } from '~/controllers/users.controller'
@@ -98,8 +99,11 @@ Path: /users/verify-forgot-password
 method: POST
 body: { forgot_password_token: string }
  */
-// eslint-disable-next-line prettier/prettier
-usersRouter.post('/verify-forgot-password', verifyForgotPasswordTokenValidator, wrapAsync(verifyForgotPasswordTokenController))
+usersRouter.post(
+  '/verify-forgot-password',
+  verifyForgotPasswordTokenValidator,
+  wrapAsync(verifyForgotPasswordTokenController)
+)
 
 /**
 Description: reset password
@@ -111,8 +115,12 @@ body: {
     confirmPassword: string
   }
  */
-// eslint-disable-next-line prettier/prettier
-usersRouter.post('/reset-password', resetPasswordValidator, verifyForgotPasswordTokenValidator, wrapAsync(resetPasswordController))
+usersRouter.post(
+  '/reset-password',
+  resetPasswordValidator,
+  verifyForgotPasswordTokenValidator,
+  wrapAsync(resetPasswordController)
+)
 
 /**
 description: lấy thông tin của user đang đăng nhập
@@ -156,8 +164,13 @@ usersRouter.get('/:username', wrapAsync(getProfileController))
  * Headers: { Authorization: Bearer <access_token> }
  * body: { old_password: string, password: string, confirm_password: string }
  */
-// eslint-disable-next-line prettier/prettier
-usersRouter.put('/change-password', accessTokenValidator, verifiedUserValidator, changePasswordValidator, wrapAsync(changePasswordController))
+usersRouter.put(
+  '/change-password',
+  accessTokenValidator,
+  verifiedUserValidator,
+  changePasswordValidator,
+  wrapAsync(changePasswordController)
+)
 
 /**
  * Discription: Refresh Token
