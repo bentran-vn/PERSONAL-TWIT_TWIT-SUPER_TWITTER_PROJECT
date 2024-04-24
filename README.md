@@ -5,7 +5,7 @@ This is a "<i>Self Training</i>" project. That create a software system with sca
 
 - Backend: NodeJS, ExpressJS, TypeScript, MongoDB.
 - Environment Configuration: Eslint, Prettier, Nodemon
-- System Desgin: SOLID, Dependency Injection, MVC models
+- System Desgin: SOLID, Dependency Injection
 - Architecture: Three layers architecture
 
 # 2. Installation
